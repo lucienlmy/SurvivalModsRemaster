@@ -234,7 +234,7 @@ void SCREEN::ShowControls()
 	strcpy_s(controlB, "survival\n");
 	strcat_s(controlB, "Press ~");
 	strcat_s(controlB, controlsNames[static_cast<int>(Data::hardcoreSurvivalControl)]);
-	strcat_s(controlB, "~ for harcore survival");
+	strcat_s(controlB, "~ for hardcore survival");
 	HUD::BEGIN_TEXT_COMMAND_DISPLAY_HELP("TWOSTRINGS");
     HUD::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(controlA);
     HUD::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(controlB);
