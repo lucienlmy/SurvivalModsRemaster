@@ -86,12 +86,12 @@ void SURVIVAL::Initialize()
 	if (SpawnerData::isHalloween)
 	{
 		MISC::SET_WEATHER_TYPE_OVERTIME_PERSIST("HALLOWEEN", 30);
-		MISC::SET_RAIN(0.5f);
+		//MISC::SET_RAIN(0.5f);
 	}
 	else if (SpawnerData::isXmas)
 	{
 		MISC::SET_WEATHER_TYPE_OVERTIME_PERSIST("BLIZZARD", 30);
-		MISC::SET_RAIN(0.5f);
+		//MISC::SET_RAIN(0.5f);
 	}
 
 	SurvivalData::Started = true;
