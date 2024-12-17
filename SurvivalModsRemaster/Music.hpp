@@ -13,7 +13,7 @@ namespace MUSIC
 		Casino,
 		Casino2,
 		Tuner,
-		Contract
+		Hacker
 	};
 
 	struct MusicData

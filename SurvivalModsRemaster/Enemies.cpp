@@ -170,7 +170,7 @@ void RemoveDeadEnemies()
         {
             if (PED::IS_PED_FLEEING(body) && !CALC::IsInRange_2(ENTITY::GET_ENTITY_COORDS(body, true), SURVIVAL::SpawnerData::location, 160))
             {
-                ENTITY::SET_ENTITY_HEALTH(body, 0, 0);
+                ENTITY::SET_ENTITY_HEALTH(body, 0, 0, NULL);
             }
             else
             {
@@ -377,7 +377,7 @@ void InitializeJesus(Ped ped)
     PED::SET_PED_CAN_RAGDOLL(ped, false);
     PED::SET_PED_CONFIG_FLAG(ped, 281, false);
     PED::SET_PED_MAX_HEALTH(ped, 1000);
-    ENTITY::SET_ENTITY_HEALTH(ped, 1000, 0);
+    ENTITY::SET_ENTITY_HEALTH(ped, 1000, 0, NULL);
     BLIPS::CreateForEnemyPed(ped, 305, "Jesus Christ");
 }
 
@@ -401,7 +401,7 @@ void InitializeJuggernaut(Ped ped)
     PED::SET_PED_CAN_RAGDOLL(ped, false);
     PED::SET_PED_CONFIG_FLAG(ped, 281, true);
     PED::SET_PED_MAX_HEALTH(ped, 1000);
-    ENTITY::SET_ENTITY_HEALTH(ped, 1000, 0);
+    ENTITY::SET_ENTITY_HEALTH(ped, 1000, 0, NULL);
     BLIPS::CreateForEnemyPed(ped, 543, "Enemy Juggernaut");
     PED::SET_PED_RELATIONSHIP_GROUP_HASH(ped, Data::enemiesRelGroup);
     int accuracyModifier = SURVIVAL::SurvivalData::CurrentWave > 10 ? 10 : SURVIVAL::SurvivalData::CurrentWave;
@@ -423,7 +423,7 @@ void InitializeRageEnemy(Ped ped)
     PED::SET_PED_CAN_RAGDOLL(ped, false);
     PED::SET_PED_CONFIG_FLAG(ped, 281, true);
     PED::SET_PED_MAX_HEALTH(ped, 1250);
-    ENTITY::SET_ENTITY_HEALTH(ped, 1250, 0);
+    ENTITY::SET_ENTITY_HEALTH(ped, 1250, 0, NULL);
     TASK::TASK_PUT_PED_DIRECTLY_INTO_MELEE(ped, PLAYER::PLAYER_PED_ID(), 0, -1, 0, 0);
     PED::SET_AI_MELEE_WEAPON_DAMAGE_MODIFIER(100);
     BLIPS::CreateForEnemyPed(ped, 671, "Ragemode Sasquatch");
@@ -433,7 +433,7 @@ void InitializeRageEnemy(Ped ped)
 void InitializeSuicidal(Ped ped)
 {
     PED::SET_PED_MAX_HEALTH(ped, 420);
-    ENTITY::SET_ENTITY_HEALTH(ped, 420, 0);
+    ENTITY::SET_ENTITY_HEALTH(ped, 420, 0, NULL);
     PED::SET_PED_CONFIG_FLAG(ped, 281, true);
     WEAPON::GIVE_WEAPON_TO_PED(ped, eWeapon::WeaponKnife, 1, true, true);
     WEAPON::GIVE_WEAPON_TO_PED(ped, eWeapon::WeaponHatchet, 1, true, true);
@@ -443,9 +443,93 @@ void InitializeSuicidal(Ped ped)
     PED::SET_PED_RELATIONSHIP_GROUP_HASH(ped, Data::enemiesRelGroup);
 }
 
+bool ZombieResourcesLoaded()
+{
+    return STREAMING::HAS_ANIM_DICT_LOADED("anim@scripted@surv@ig2_zombie_spawn@shambler@") &&
+        STREAMING::HAS_ANIM_DICT_LOADED("anim@scripted@surv@ig2_zombie_spawn@runner@") &&
+        STREAMING::HAS_CLIP_SET_LOADED("clipset@anim@ingame@move_m@zombie@core") &&
+        STREAMING::HAS_CLIP_SET_LOADED("clipset@anim@ingame@move_m@zombie@strafe") &&
+        STREAMING::HAS_CLIP_SET_LOADED("clipset@anim@ingame@melee@unarmed@streamed_core_zombie") &&
+        STREAMING::HAS_CLIP_SET_LOADED("clipset@anim@ingame@melee@unarmed@streamed_variations_zombie") &&
+        STREAMING::HAS_CLIP_SET_LOADED("clipset@anim@ingame@melee@unarmed@streamed_taunts_zombie");
+}
+
+void InitializeZombie(Ped ped, bool fast)
+{
+    while (!ZombieResourcesLoaded())
+    {
+        WAIT(50);
+    }
+
+    PED::SET_PED_RELATIONSHIP_GROUP_HASH(ped, Data::enemiesRelGroup);
+    PED::SET_PED_COMBAT_MOVEMENT(ped, 2);
+    PED::SET_PED_MOVEMENT_CLIPSET(ped, "clipset@anim@ingame@move_m@zombie@core", 0.25f);
+    PED::SET_PED_USING_ACTION_MODE(ped, true, -1, "clipset@anim@ingame@move_m@zombie@core");
+    PED::SET_PED_STRAFE_CLIPSET(ped, "clipset@anim@ingame@move_m@zombie@strafe");
+    WEAPON::SET_WEAPON_ANIMATION_OVERRIDE(ped, MISC::GET_HASH_KEY("ZOMBIE"));
+
+    if (fast)
+    {
+        PED::SET_PED_MIN_MOVE_BLEND_RATIO(ped, 1.0f);
+        PED::SET_PED_MAX_MOVE_BLEND_RATIO(ped, 3.0f);
+    }
+    else
+    {
+        PED::SET_PED_MIN_MOVE_BLEND_RATIO(ped, 0.25f);
+        PED::SET_PED_MAX_MOVE_BLEND_RATIO(ped, 0.5f);
+    }
+
+    WEAPON::REMOVE_ALL_PED_WEAPONS(ped, true);
+
+    PED::SET_PED_COMBAT_ATTRIBUTES(ped, 46, true);
+    PED::SET_PED_COMBAT_ATTRIBUTES(ped, 5, true);
+    PED::SET_PED_COMBAT_ATTRIBUTES(ped, 1, false);
+    PED::SET_PED_COMBAT_RANGE(ped, 1);
+    PED::SET_PED_COMBAT_MOVEMENT(ped, 2);
+    PED::SET_PED_CAN_SWITCH_WEAPON(ped, false);
+
+    if (fast) {
+        PED::SET_PED_COMBAT_ABILITY(ped, 2);
+
+    }
+    else {
+        PED::SET_PED_COMBAT_ABILITY(ped, 1);
+    }
+
+    static const char* const ANIMS[] = {
+    "action_1",
+    "action_2",
+    "action_3",
+    "action_4"
+    };
+
+    const char* anim_name = ANIMS[CALC::RanInt(4, 1) - 1];
+    const char* anim_dict = fast ? "anim@scripted@surv@ig2_zombie_spawn@runner@" : "anim@scripted@surv@ig2_zombie_spawn@shambler@";
+
+    TASK::CLEAR_PED_TASKS(ped);
+
+    int sequence = -1;
+    TASK::OPEN_SEQUENCE_TASK(&sequence);
+
+    TASK::TASK_PLAY_ANIM(0, anim_dict, anim_name, 1000.0f, -8.0f, -1, 8, 0.0f, false, false, false);
+    TASK::TASK_PAUSE(0, 1500);
+    TASK::TASK_COMBAT_PED(0, PLAYER::PLAYER_PED_ID(), 0, 16);
+
+    TASK::CLOSE_SEQUENCE_TASK(sequence);
+    TASK::TASK_PERFORM_SEQUENCE(ped, sequence);
+
+    TASK::CLEAR_SEQUENCE_TASK(&sequence);
+}
+
 void InitializeEnemy(Ped ped)
 {
     Hash pedModel = ENTITY::GET_ENTITY_MODEL(ped);
+
+    if (SURVIVAL::SurvivalData::zombies)
+    {
+        InitializeZombie(ped, SURVIVAL::SurvivalData::CurrentWave >= 5);
+        return;
+    }
 
     if (pedModel == 0xCE2CB751 &&  !jesusSpawned)
     {
@@ -498,7 +582,7 @@ void InitializeEnemy(Ped ped)
         accuracyModifier = 10;
 
     PED::SET_PED_ARMOUR(ped, SURVIVAL::SurvivalData::hardcore ? 150 : SURVIVAL::SurvivalData::CurrentWave * 10);
-    PED::SET_PED_ACCURACY(ped, 7 + (accuracyModifier * 3));
+    PED::SET_PED_ACCURACY(ped, 5 + ceil(accuracyModifier * 1.2));
     std::vector<Hash> weapons = GetWeapons(pedModel);
     size_t index = CALC::RanInt(weapons.size() - (size_t)1, (size_t)0);
     Hash weaponHash = weapons.at(index);
@@ -547,7 +631,7 @@ void InitializeEnemyInAircraft(Ped ped, bool passenger)
         accuracyModifier = 10;
 
     PED::SET_PED_ARMOUR(ped, SURVIVAL::SurvivalData::hardcore ? 150 : SURVIVAL::SurvivalData::CurrentWave * 10);
-    PED::SET_PED_ACCURACY(ped, 7 + (accuracyModifier * 3));
+    PED::SET_PED_ACCURACY(ped, 5 + accuracyModifier);
     std::vector<DWORD> weapons = GetWeapons(pedModel);
     size_t index = CALC::RanInt(weapons.size() - (size_t)1, (size_t)0);
     DWORD weaponHash = weapons.at(index);
@@ -601,7 +685,7 @@ void InitializeEnemyInVehicle(Ped ped, bool passenger)
         accuracyModifier = 10;
 
     PED::SET_PED_ARMOUR(ped, SURVIVAL::SurvivalData::hardcore ? 150 : SURVIVAL::SurvivalData::CurrentWave * 10);
-    PED::SET_PED_ACCURACY(ped, 7 + (accuracyModifier * 3));
+    PED::SET_PED_ACCURACY(ped, 5 + accuracyModifier);
     std::vector<Hash> weapons = GetWeapons(pedModel);
     size_t index = CALC::RanInt(weapons.size() - (size_t)1, (size_t)0);
     Hash weaponHash = weapons.at(index);
@@ -826,14 +910,14 @@ void ENEMIES::Process()
                 case 3:
                 case 4:
                 case 5:
-                    EnemiesData::limitReached = SURVIVAL::SurvivalData::timed ? footEnemies.size() >= 14 : footEnemies.size() >= 15;
+                    EnemiesData::limitReached = footEnemies.size() >= 12;
                     break;
                 case 6:
                 case 7:
-                    EnemiesData::limitReached = SURVIVAL::SurvivalData::timed ? footEnemies.size() >= 13 : footEnemies.size() >= 14;
+                    EnemiesData::limitReached = footEnemies.size() >= 11;
                     break;
                 default:
-                    EnemiesData::limitReached = SURVIVAL::SurvivalData::timed ? footEnemies.size() >= 12 : footEnemies.size() >= 13;
+                    EnemiesData::limitReached = footEnemies.size() >= 10;
                     break;
             }
         }

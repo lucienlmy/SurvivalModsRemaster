@@ -62,7 +62,7 @@ void JESUS::Jesus::ReviveTarget()
 	int health = ENTITY::GET_ENTITY_MAX_HEALTH(targetPed);
 	ENTITY::SET_ENTITY_COLLISION(targetPed, true, false);
 	PED::RESURRECT_PED(targetPed);
-	ENTITY::SET_ENTITY_HEALTH(targetPed, health, 0);
+	ENTITY::SET_ENTITY_HEALTH(targetPed, health, 0, NULL);
 	ENTITY::SET_ENTITY_MAX_HEALTH(targetPed, health);
 	TASK::CLEAR_PED_TASKS_IMMEDIATELY(targetPed);
 }

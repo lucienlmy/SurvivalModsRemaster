@@ -15,6 +15,7 @@ int SURVIVAL::SurvivalData::earnedMoney;
 int SURVIVAL::SurvivalData::timedTimeLeft;
 bool SURVIVAL::SurvivalData::cheated;
 bool SURVIVAL::SurvivalData::hardcore;
+bool SURVIVAL::SurvivalData::zombies;
 Ped ped;
 
 void SetEnemyAllies()
@@ -49,10 +50,38 @@ void ClearEnemyAllies()
 	}
 }
 
+void LoadZombieResources()
+{
+	STREAMING::REQUEST_ANIM_DICT("anim@scripted@surv@ig2_zombie_spawn@shambler@");
+	STREAMING::REQUEST_ANIM_DICT("anim@scripted@surv@ig2_zombie_spawn@runner@");
+	STREAMING::REQUEST_CLIP_SET("clipset@anim@ingame@move_m@zombie@core");
+	STREAMING::REQUEST_CLIP_SET("clipset@anim@ingame@move_m@zombie@strafe");
+	STREAMING::REQUEST_CLIP_SET("clipset@anim@ingame@melee@unarmed@streamed_core_zombie");
+	STREAMING::REQUEST_CLIP_SET("clipset@anim@ingame@melee@unarmed@streamed_variations_zombie");
+	STREAMING::REQUEST_CLIP_SET("clipset@anim@ingame@melee@unarmed@streamed_taunts_zombie");
+}
+
+void UnloadZombieResources()
+{
+	STREAMING::REMOVE_ANIM_DICT("anim@scripted@surv@ig2_zombie_spawn@shambler@");
+	STREAMING::REMOVE_ANIM_DICT("anim@scripted@surv@ig2_zombie_spawn@runner@");
+	STREAMING::REMOVE_CLIP_SET("clipset@anim@ingame@move_m@zombie@core");
+	STREAMING::REMOVE_CLIP_SET("clipset@anim@ingame@move_m@zombie@strafe");
+	STREAMING::REMOVE_CLIP_SET("clipset@anim@ingame@melee@unarmed@streamed_core_zombie");
+	STREAMING::REMOVE_CLIP_SET("clipset@anim@ingame@melee@unarmed@streamed_variations_zombie");
+	STREAMING::REMOVE_CLIP_SET("clipset@anim@ingame@melee@unarmed@streamed_taunts_zombie");
+}
+
 void SURVIVAL::StartMission(bool infiniteWaves, bool timed, bool hardcore)
 {
 	SurvivalData::MissionID = TriggerPedsData::names.at(Data::TPIndex);
 	LoadSurvival(SurvivalData::MissionID);
+
+	if (SurvivalData::zombies)
+	{
+		LoadZombieResources();
+	}
+
 	SurvivalData::IsActive = true;
 	SurvivalData::Started = false;
 	SurvivalData::cheated = false;
@@ -255,6 +284,11 @@ void SURVIVAL::CompleteSurvival()
 		MISC::CLEAR_WEATHER_TYPE_PERSIST();
 	}
 
+	if (SurvivalData::zombies)
+	{
+		UnloadZombieResources();
+	}
+
 	TriggerDelayedSpawn();
 }
 
@@ -300,6 +334,11 @@ void SURVIVAL::QuitSurvival(bool playerDied)
 		MISC::CLEAR_WEATHER_TYPE_PERSIST();
 	}
 
+	if (SurvivalData::zombies)
+	{
+		UnloadZombieResources();
+	}
+
 	TriggerDelayedSpawn();
 }
 
@@ -323,6 +362,11 @@ void SURVIVAL::ScriptQuit()
 		MISC::SET_WEATHER_TYPE_OVERTIME_PERSIST("CLEAR", 30);
 		MISC::SET_RAIN(-1);
 		MISC::CLEAR_WEATHER_TYPE_PERSIST();
+	}
+
+	if (SurvivalData::zombies)
+	{
+		UnloadZombieResources();
 	}
 }
 
