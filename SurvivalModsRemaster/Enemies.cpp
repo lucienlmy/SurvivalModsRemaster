@@ -456,13 +456,41 @@ bool ZombieResourcesLoaded()
 
 void InitializeZombie(Ped ped, bool fast)
 {
+    Vector3 playerCoords = ENTITY::GET_ENTITY_COORDS(PLAYER::PLAYER_PED_ID(), true);
+    PED::SET_PED_RELATIONSHIP_GROUP_HASH(ped, Data::enemiesRelGroup);
+
+    WEAPON::REMOVE_ALL_PED_WEAPONS(ped, true);
+
+    PED::SET_PED_COMBAT_ATTRIBUTES(ped, 0, false);
+    PED::SET_PED_COMBAT_ATTRIBUTES(ped, 5, true);
+    PED::SET_PED_COMBAT_ATTRIBUTES(ped, 46, true);
+    PED::SET_PED_COMBAT_ATTRIBUTES(ped, 13, true);
+    PED::SET_PED_COMBAT_ATTRIBUTES(ped, 50, true);
+    PED::SET_PED_COMBAT_ATTRIBUTES(ped, 58, true);
+    PED::SET_PED_COMBAT_ATTRIBUTES(ped, 38, true);
+    PED::SET_PED_COMBAT_ATTRIBUTES(ped, 1, false);
+    PED::SET_PED_COMBAT_ATTRIBUTES(ped, 3, false);
+    PED::SET_PED_COMBAT_ATTRIBUTES(ped, 17, false);
+    PED::SET_PED_COMBAT_ATTRIBUTES(ped, 42, true);
+    PED::SET_PED_COMBAT_ATTRIBUTES(ped, 71, true);
+    PED::SET_PED_CONFIG_FLAG(ped, 430, true);
+    PED::SET_PED_COMBAT_ATTRIBUTES(ped, 28, true);
+    PED::SET_PED_COMBAT_ATTRIBUTES(ped, 4, true);
+    PED::SET_PED_COMBAT_ATTRIBUTES(ped, 21, true);
+    PED::SET_PED_COMBAT_ATTRIBUTES(ped, 31, false);
+    PED::SET_PED_CONFIG_FLAG(ped, 231, true);
+    PED::SET_PED_CONFIG_FLAG(ped, 281, true);
+
+    PED::SET_PED_COMBAT_RANGE(ped, 2);
+    PED::SET_PED_COMBAT_MOVEMENT(ped, 2);
+    PED::SET_PED_CAN_SWITCH_WEAPON(ped, false);
+    PED::SET_PED_COMBAT_ABILITY(ped, 2);
+
     while (!ZombieResourcesLoaded())
     {
         WAIT(50);
     }
 
-    PED::SET_PED_RELATIONSHIP_GROUP_HASH(ped, Data::enemiesRelGroup);
-    PED::SET_PED_COMBAT_MOVEMENT(ped, 2);
     PED::SET_PED_MOVEMENT_CLIPSET(ped, "clipset@anim@ingame@move_m@zombie@core", 0.25f);
     PED::SET_PED_USING_ACTION_MODE(ped, true, -1, "clipset@anim@ingame@move_m@zombie@core");
     PED::SET_PED_STRAFE_CLIPSET(ped, "clipset@anim@ingame@move_m@zombie@strafe");
@@ -476,31 +504,14 @@ void InitializeZombie(Ped ped, bool fast)
     else
     {
         PED::SET_PED_MIN_MOVE_BLEND_RATIO(ped, 0.25f);
-        PED::SET_PED_MAX_MOVE_BLEND_RATIO(ped, 0.5f);
-    }
-
-    WEAPON::REMOVE_ALL_PED_WEAPONS(ped, true);
-
-    PED::SET_PED_COMBAT_ATTRIBUTES(ped, 46, true);
-    PED::SET_PED_COMBAT_ATTRIBUTES(ped, 5, true);
-    PED::SET_PED_COMBAT_ATTRIBUTES(ped, 1, false);
-    PED::SET_PED_COMBAT_RANGE(ped, 1);
-    PED::SET_PED_COMBAT_MOVEMENT(ped, 2);
-    PED::SET_PED_CAN_SWITCH_WEAPON(ped, false);
-
-    if (fast) {
-        PED::SET_PED_COMBAT_ABILITY(ped, 2);
-
-    }
-    else {
-        PED::SET_PED_COMBAT_ABILITY(ped, 1);
+        PED::SET_PED_MAX_MOVE_BLEND_RATIO(ped, 0.25f);
     }
 
     static const char* const ANIMS[] = {
-    "action_1",
-    "action_2",
-    "action_3",
-    "action_4"
+    "action_01",
+    "action_02",
+    "action_03",
+    "action_04"
     };
 
     const char* anim_name = ANIMS[CALC::RanInt(4, 1) - 1];
@@ -512,7 +523,6 @@ void InitializeZombie(Ped ped, bool fast)
     TASK::OPEN_SEQUENCE_TASK(&sequence);
 
     TASK::TASK_PLAY_ANIM(0, anim_dict, anim_name, 1000.0f, -8.0f, -1, 8, 0.0f, false, false, false);
-    TASK::TASK_PAUSE(0, 1500);
     TASK::TASK_COMBAT_PED(0, PLAYER::PLAYER_PED_ID(), 0, 16);
 
     TASK::CLOSE_SEQUENCE_TASK(sequence);
