@@ -728,6 +728,16 @@ Ped SURVIVAL::SpawnFreemodeCustom(const std::string& outfit, bool isMale, bool i
 
 Ped SURVIVAL::SpawnJuggernaut()
 {
+	if (SurvivalData::zombies)
+	{
+		Hash model = INIT::LoadModel("G_M_M_Zombie_02");
+		Vector3 spawnpoint = safeSpawnpoint();
+		Ped ped = PED::CREATE_PED(0, model, spawnpoint.x, spawnpoint.y, spawnpoint.z, 0, false, true);
+		STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(model);
+
+		return ped;
+	}
+
 	int index;
 
 	if (SpawnerData::isHalloween)
@@ -752,19 +762,41 @@ Ped SURVIVAL::SpawnJuggernaut()
 	else
 	{
 		Hash model = INIT::LoadModel(name.c_str());
-		Ped ped;
 		Vector3 spawnpoint = safeSpawnpoint();
-		ped = PED::CREATE_PED(0, model, spawnpoint.x, spawnpoint.y, spawnpoint.z, 0, false, true);
+		Ped ped = PED::CREATE_PED(0, model, spawnpoint.x, spawnpoint.y, spawnpoint.z, 0, false, true);
 		STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(model);
 
 		return ped;
 	}
 }
 
+const char* GetDogModel()
+{
+	if (!SURVIVAL::SurvivalData::zombies)
+	{
+		return dogModel.c_str();
+	}
+
+	int randomInt = MISC::GET_RANDOM_INT_IN_RANGE(0, 100);
+
+	if (randomInt <= 33)
+	{
+		return "A_C_Boar_02";
+	}
+	else if (randomInt <= 66)
+	{
+		return "A_C_Coyote_02";
+	}
+	else
+	{
+		return "A_C_Deer_02";
+	}
+}
+
 Ped SURVIVAL::SpawnDog()
 {
     Vector3 spawnpoint = safeSpawnpoint();
-	Hash model = INIT::LoadModel(dogModel.c_str());
+	Hash model = INIT::LoadModel(GetDogModel());
 	Ped ped = PED::CREATE_PED(0, model, spawnpoint.x, spawnpoint.y, spawnpoint.z, 0, false, true);
 	INIT::UnloadModel(model);
 
@@ -793,7 +825,10 @@ Ped SURVIVAL::SpawnEnemy(int wave, bool canSpawnJesus)
 			return SpawnFreemodeCustom(data.modelName, data.isMale);
 		else
 		{
-			Hash model = MISC::GET_HASH_KEY(data.modelName.c_str());
+			Hash model = SURVIVAL::SurvivalData::zombies ? 
+				MISC::GET_HASH_KEY("G_M_M_Zombie_01") :
+				MISC::GET_HASH_KEY(data.modelName.c_str());
+
             Vector3 spawnpoint = safeSpawnpoint();
 			INIT::LoadModel(model);
 			Ped ped = PED::CREATE_PED(0, model, spawnpoint.x, spawnpoint.y, spawnpoint.z, 0, false, true);

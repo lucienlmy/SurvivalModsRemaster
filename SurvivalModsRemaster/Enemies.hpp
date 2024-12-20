@@ -2,6 +2,7 @@
 
 #include "natives.h"
 #include "Calculations.hpp"
+#include "SurvivalTypes.hpp"
 #include "Jesus.hpp"
 #include "Screen.hpp"
 #include "SurvivalSpawner.hpp"
@@ -24,17 +25,9 @@ namespace ENEMIES
 		static bool limitReached;
 		static int currentWaveSize;
 		static int currentDogCount;
+		static int currentJugCount;
 		static int kills;
 	};
-
-    struct Suicidal
-    {
-        Ped ped = 0;
-        bool timer = false;
-        bool exploded = false;
-        Vector3 deadCoords{};
-        int timeOfDeath = 0;
-    };
 
     void Process();
     void RemoveUnusedVehicles();
