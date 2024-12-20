@@ -135,7 +135,7 @@ void SURVIVAL::Initialize()
 		TASK::TASK_LEAVE_VEHICLE(PLAYER::PLAYER_PED_ID(), ve, 0);
 	}
 
-	if (SpawnerData::isHalloween || SurvivalData::zombies)
+	if (SpawnerData::isHalloween)
 	{
 		MISC::SET_WEATHER_TYPE_OVERTIME_PERSIST("HALLOWEEN", 30);
 		MISC::SET_RAIN(0.5f);
@@ -146,6 +146,13 @@ void SURVIVAL::Initialize()
 	{
 		MISC::SET_WEATHER_TYPE_OVERTIME_PERSIST("BLIZZARD", 30);
 		MISC::SET_RAIN(0.5f);
+	}
+	else if (SurvivalData::zombies)
+	{
+		MISC::SET_WEATHER_TYPE_OVERTIME_PERSIST("BLIZZARD", 30);
+		MISC::SET_RAIN(0.5f);
+		CLOCK::ADVANCE_CLOCK_TIME_TO(0, 0, 0);
+		CLOCK::PAUSE_CLOCK(true);
 	}
 
 	SurvivalData::Started = true;
@@ -335,6 +342,7 @@ void SURVIVAL::QuitSurvival(bool playerDied)
 	if (playerDied)
 	{
 		GiveReward(true);
+		UnloadNY();
 	}
 	else
 	{

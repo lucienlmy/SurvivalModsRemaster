@@ -779,13 +779,9 @@ const char* GetDogModel()
 
 	int randomInt = MISC::GET_RANDOM_INT_IN_RANGE(0, 100);
 
-	if (randomInt <= 33)
+	if (randomInt <= 60)
 	{
 		return "A_C_Boar_02";
-	}
-	else if (randomInt <= 66)
-	{
-		return "A_C_Coyote_02";
 	}
 	else
 	{
@@ -803,9 +799,9 @@ Ped SURVIVAL::SpawnDog()
 	return ped;
 }
 
-Ped SURVIVAL::SpawnEnemy(int wave, bool canSpawnJesus)
+Ped SURVIVAL::SpawnEnemy(int wave, bool canSpawnJesus, bool explosive)
 {
-	if (SpawnerData::hasJesus && canSpawnJesus && (wave >= 7 || SURVIVAL::SurvivalData::hardcore))
+	if (!explosive && SpawnerData::hasJesus && canSpawnJesus && (wave >= 7 || SURVIVAL::SurvivalData::hardcore))
 	{
 		Hash model = 0xCE2CB751;
 		size_t index = CALC::RanInt(enemySpawnpoints.size() - (size_t)1, (size_t)0);
@@ -822,12 +818,28 @@ Ped SURVIVAL::SpawnEnemy(int wave, bool canSpawnJesus)
 		SpawnData data = currentPedModels.at(index);
 
 		if (data.isMp)
+		{
 			return SpawnFreemodeCustom(data.modelName, data.isMale);
+		}
 		else
 		{
-			Hash model = SURVIVAL::SurvivalData::zombies ? 
-				MISC::GET_HASH_KEY("G_M_M_Zombie_01") :
-				MISC::GET_HASH_KEY(data.modelName.c_str());
+			Hash model;
+
+			if (SURVIVAL::SurvivalData::zombies)
+			{
+				if (explosive)
+				{
+					model = MISC::GET_HASH_KEY("G_M_M_Zombie_03");
+				}
+				else
+				{
+					model = MISC::GET_HASH_KEY("G_M_M_Zombie_01");
+				}
+			}
+			else
+			{
+				model = MISC::GET_HASH_KEY(data.modelName.c_str());
+			}
 
             Vector3 spawnpoint = safeSpawnpoint();
 			INIT::LoadModel(model);
