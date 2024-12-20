@@ -150,7 +150,6 @@ void SURVIVAL::Initialize()
 	else if (SurvivalData::zombies)
 	{
 		MISC::SET_WEATHER_TYPE_OVERTIME_PERSIST("BLIZZARD", 30);
-		MISC::SET_RAIN(0.5f);
 		CLOCK::ADVANCE_CLOCK_TIME_TO(0, 0, 0);
 		CLOCK::PAUSE_CLOCK(true);
 	}

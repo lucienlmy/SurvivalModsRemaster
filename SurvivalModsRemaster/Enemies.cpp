@@ -1180,7 +1180,7 @@ bool ShouldSpawnAnimal()
 {
     if (SURVIVAL::SurvivalData::zombies)
     {
-        return SURVIVAL::SurvivalData::CurrentWave >= 4 && !dogLimitReached && ENEMIES::EnemiesData::currentWaveSize >= SURVIVAL::SurvivalData::MaxWaveSize / 2 && MISC::GET_RANDOM_INT_IN_RANGE(0, 100) >= (5 + (SURVIVAL::SurvivalData::CurrentWave * 1.2));
+        return SURVIVAL::SurvivalData::CurrentWave >= 4 && !dogLimitReached && MISC::GET_RANDOM_INT_IN_RANGE(0, 100) >= (5 + (SURVIVAL::SurvivalData::CurrentWave * 1.2));
     }
 
     return (SURVIVAL::SurvivalData::CurrentWave >= 7 || SURVIVAL::SurvivalData::hardcore) && SURVIVAL::SpawnerData::hasDogs && !dogLimitReached;
@@ -1190,28 +1190,10 @@ bool ShouldSpawnSuicidal()
 {
     if (SURVIVAL::SurvivalData::zombies)
     {
-        return SURVIVAL::SurvivalData::CurrentWave >= 6 && !suicidalLimitReached && ENEMIES::EnemiesData::currentWaveSize >= SURVIVAL::SurvivalData::MaxWaveSize / 2 && MISC::GET_RANDOM_INT_IN_RANGE(0, 100) >= (5 + (SURVIVAL::SurvivalData::CurrentWave * 1.1));
+        return SURVIVAL::SurvivalData::CurrentWave >= 6 && !suicidalLimitReached && MISC::GET_RANDOM_INT_IN_RANGE(0, 100) >= (5 + (SURVIVAL::SurvivalData::CurrentWave * 1.1));
     }
 
     return (SURVIVAL::SurvivalData::CurrentWave >= 5 || SURVIVAL::SurvivalData::hardcore) && SURVIVAL::SpawnerData::hasSuicidal && CALC::RanInt(100, 1) <= 20 && !suicidalLimitReached;
-}
-
-bool HasSuicidal()
-{
-    if (!SURVIVAL::SurvivalData::zombies)
-    {
-        return SURVIVAL::SpawnerData::hasSuicidal;
-    }
-
-    for (Enemy& enemy : footEnemies)
-    {
-        if (enemy.enemyType == eEnemyType::Suicidal)
-        {
-            return true;
-        }
-    }
-
-    return false;
 }
 
 void ENEMIES::Process()
@@ -1368,10 +1350,7 @@ void ENEMIES::Process()
                 SCREEN::ShowSubtitle("Kill the ~r~enemies.", 8000);
         }
 
-        if (HasSuicidal())
-        {
-            ProcessSuicidals();
-        }
+        ProcessSuicidals();
 
         if (SURVIVAL::SurvivalData::zombies)
         {
