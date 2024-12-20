@@ -650,12 +650,12 @@ void InitializeJuggernaut(Ped ped)
             AUDIO::START_AUDIO_SCENE("DLC_24-1_YK_Mixer_Scene");
         }
 
-        PED::SET_PED_MOVEMENT_CLIPSET(ped, "clipset@anim@ingame@move_m@zombie@core", 0.1f);
+        PED::SET_PED_MOVEMENT_CLIPSET(ped, "clipset@anim@ingame@move_m@zombie@core", 0.25f);
         PED::SET_PED_USING_ACTION_MODE(ped, true, -1, "clipset@anim@ingame@move_m@zombie@core");
         PED::SET_PED_STRAFE_CLIPSET(ped, "clipset@anim@ingame@move_m@zombie@strafe");
         WEAPON::SET_WEAPON_ANIMATION_OVERRIDE(ped, MISC::GET_HASH_KEY("ZOMBIE"));
-        PED::SET_PED_MIN_MOVE_BLEND_RATIO(ped, 0.1f);
-        PED::SET_PED_MAX_MOVE_BLEND_RATIO(ped, 0.1f);
+        PED::SET_PED_MIN_MOVE_BLEND_RATIO(ped, 1);
+        PED::SET_PED_MAX_MOVE_BLEND_RATIO(ped, 1);
 
         static const char* const ANIMS[] = {
        "action_01",
@@ -751,8 +751,8 @@ void InitializeZombie(Ped ped, bool fast)
     }
     else
     {
-        PED::SET_PED_MIN_MOVE_BLEND_RATIO(ped, 0.25f);
-        PED::SET_PED_MAX_MOVE_BLEND_RATIO(ped, 0.25f);
+        PED::SET_PED_MIN_MOVE_BLEND_RATIO(ped, 1);
+        PED::SET_PED_MAX_MOVE_BLEND_RATIO(ped, 1.5f);
     }
 
     static const char* const ANIMS[] = {
