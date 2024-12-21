@@ -37,6 +37,20 @@ bool SURVIVAL::SpawnerData::hasSuicidal;
 bool SURVIVAL::SpawnerData::hasBoats;
 std::vector<std::string> jugModels;
 std::string dogModel;
+std::vector<Hash> loadedModels = std::vector<Hash>();
+
+void AddModelToUnload(Hash model)
+{
+	for (Hash& model : loadedModels)
+	{
+		if (model == model)
+		{
+			return;
+		}
+	}
+
+	loadedModels.push_back(model);
+}
 
 ePickupType SURVIVAL::GetPickupType(const std::string& pickupModel)
 {
@@ -363,6 +377,13 @@ void SURVIVAL::ClearVectors()
 	SpawnerData::strongWeapons.clear();
 	jugModels.clear();
 	dogModel.clear();
+
+	for (Hash& model : loadedModels)
+	{
+		INIT::UnloadModel(model);
+	}
+
+	loadedModels.clear();
 }
 
 void SURVIVAL::LoadSurvival(const std::string& survivalID)
@@ -593,12 +614,8 @@ Ped SURVIVAL::SpawnFreemodeCustom(const std::string& outfit, bool isMale, bool i
 		model = MISC::GET_HASH_KEY("MP_F_Freemode_01");
 	}
 
-	STREAMING::REQUEST_MODEL(model);
-
-	while (!STREAMING::HAS_MODEL_LOADED(model))
-	{
-		WAIT(250);
-	}
+	INIT::LoadModel(model);
+	AddModelToUnload(model);
 
 	Ped ped;
 
@@ -611,8 +628,6 @@ Ped SURVIVAL::SpawnFreemodeCustom(const std::string& outfit, bool isMale, bool i
 	{
 		ped = PED::CREATE_PED_INSIDE_VEHICLE(vehicle, 0, model, seat, false, true);
 	}
-
-	STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(model);
 
 	if (outfit.find("_JUGGERNAUT_") != std::string::npos && isMale)
 	{
@@ -731,9 +746,9 @@ Ped SURVIVAL::SpawnJuggernaut()
 	if (SurvivalData::zombies)
 	{
 		Hash model = INIT::LoadModel("G_M_M_Zombie_02");
+		AddModelToUnload(model);
 		Vector3 spawnpoint = safeSpawnpoint();
 		Ped ped = PED::CREATE_PED(0, model, spawnpoint.x, spawnpoint.y, spawnpoint.z, 0, false, true);
-		STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(model);
 
 		return ped;
 	}
@@ -762,9 +777,9 @@ Ped SURVIVAL::SpawnJuggernaut()
 	else
 	{
 		Hash model = INIT::LoadModel(name.c_str());
+		AddModelToUnload(model);
 		Vector3 spawnpoint = safeSpawnpoint();
 		Ped ped = PED::CREATE_PED(0, model, spawnpoint.x, spawnpoint.y, spawnpoint.z, 0, false, true);
-		STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(model);
 
 		return ped;
 	}
@@ -793,8 +808,8 @@ Ped SURVIVAL::SpawnDog()
 {
     Vector3 spawnpoint = safeSpawnpoint();
 	Hash model = INIT::LoadModel(GetDogModel());
+	AddModelToUnload(model);
 	Ped ped = PED::CREATE_PED(0, model, spawnpoint.x, spawnpoint.y, spawnpoint.z, 0, false, true);
-	INIT::UnloadModel(model);
 
 	return ped;
 }
@@ -807,8 +822,8 @@ Ped SURVIVAL::SpawnEnemy(int wave, bool canSpawnJesus, bool explosive)
 		size_t index = CALC::RanInt(enemySpawnpoints.size() - (size_t)1, (size_t)0);
 		Vector3 spawnpoint = enemySpawnpoints.at(index);
 		INIT::LoadModel(model);
+		AddModelToUnload(model);
 		Ped ped = PED::CREATE_PED(0, model, spawnpoint.x, spawnpoint.y, spawnpoint.z, 0, false, true);
-		INIT::UnloadModel(model);
 
 		return ped;
 	}
@@ -843,8 +858,8 @@ Ped SURVIVAL::SpawnEnemy(int wave, bool canSpawnJesus, bool explosive)
 
             Vector3 spawnpoint = safeSpawnpoint();
 			INIT::LoadModel(model);
+			AddModelToUnload(model);
 			Ped ped = PED::CREATE_PED(0, model, spawnpoint.x, spawnpoint.y, spawnpoint.z, 0, false, true);
-			INIT::UnloadModel(model);
 
 			return ped;
 		}
@@ -872,8 +887,9 @@ Vehicle SURVIVAL::SpawnVehicle(bool boat)
     }
 
 	Hash model = INIT::LoadModel(modelName.c_str());
+	AddModelToUnload(model);
 	Vehicle vehicle = VEHICLE::CREATE_VEHICLE(model, spawnpoint.x, spawnpoint.y, spawnpoint.z, 0, false, true, false);
-	INIT::UnloadModel(model);
+
 	return vehicle;
 }
 
@@ -884,8 +900,9 @@ Vehicle SURVIVAL::SpawnAircraft()
 	index = CALC::RanInt(aircraftSpawnpoints.size() - (size_t)1, (size_t)0);
 	Vector3 spawnPoint = aircraftSpawnpoints.at(index);
 	Hash model = INIT::LoadModel(modelName.c_str());
+	AddModelToUnload(model);
 	Vehicle vehicle = VEHICLE::CREATE_VEHICLE(model, spawnPoint.x, spawnPoint.y, spawnPoint.z, 0, false, true, false);
-	INIT::UnloadModel(model);
+
 	return vehicle;
 }
 
@@ -906,8 +923,9 @@ std::vector<Ped> SURVIVAL::SpawnEnemiesInVehicle(Vehicle vehicle, int wave)
 		{
 			Hash hash = MISC::GET_HASH_KEY(data.modelName.c_str());
 			INIT::LoadModel(hash);
+			AddModelToUnload(hash);
 			ped = PED::CREATE_PED_INSIDE_VEHICLE(vehicle, 0, hash, i, false, true);
-			INIT::UnloadModel(hash);
+
 		}
 		peds.push_back(ped);
 	}
