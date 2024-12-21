@@ -164,11 +164,8 @@ bool SURVIVAL::PlayerCheated()
 
 void SURVIVAL::ProcessSurvival()
 {
-	if (SurvivalData::zombies) 
-	{
-		VEHICLE::SET_VEHICLE_DENSITY_MULTIPLIER_THIS_FRAME(0.0f);
-		PED::SET_PED_DENSITY_MULTIPLIER_THIS_FRAME(0.0f);
-	}
+	VEHICLE::SET_VEHICLE_DENSITY_MULTIPLIER_THIS_FRAME(0.0f);
+	PED::SET_PED_DENSITY_MULTIPLIER_THIS_FRAME(0.0f);
 
 	if (!SurvivalData::cheated && PlayerCheated())
 	{
