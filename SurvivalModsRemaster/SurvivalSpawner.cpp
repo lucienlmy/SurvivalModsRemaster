@@ -584,8 +584,9 @@ void SURVIVAL::SetComponentVariation(Ped ped, int componentId, int drawableId, i
 	}
 }
 
-Vector3 safeSpawnpoint() {
+Vector3 safeSpawnpoint(bool isAnimal = false, bool isExplosive = false) {
     Vector3 playerCoords = ENTITY::GET_ENTITY_COORDS(PLAYER::PLAYER_PED_ID(), 1);
+	bool doRangeCheck = !SURVIVAL::SurvivalData::zombies || (SURVIVAL::SurvivalData::zombies && !isAnimal && !isExplosive);
 
     if (enemySpawnpoints.size() > 1) {
         Vector3 coords;
@@ -593,7 +594,18 @@ Vector3 safeSpawnpoint() {
         do {
             size_t index = CALC::RanInt(enemySpawnpoints.size() - (size_t)1, (size_t)0);
             coords = enemySpawnpoints.at(index);
-        } while(CALC::IsInRange_2(coords, playerCoords, 20.0f));
+		} while (doRangeCheck && CALC::IsInRange_2(coords, playerCoords, 20.0f));
+
+		if (SURVIVAL::SurvivalData::zombies)
+		{
+			float groundZ;
+			MISC::GET_GROUND_Z_FOR_3D_COORD(coords.x, coords.y, coords.z, &groundZ, 0, 0);
+			
+			if (groundZ > 0)
+			{
+				coords.z = groundZ;
+			}
+		}
 
         return coords;
     }
@@ -806,7 +818,7 @@ const char* GetDogModel()
 
 Ped SURVIVAL::SpawnDog()
 {
-    Vector3 spawnpoint = safeSpawnpoint();
+    Vector3 spawnpoint = safeSpawnpoint(true);
 	Hash model = INIT::LoadModel(GetDogModel());
 	AddModelToUnload(model);
 	Ped ped = PED::CREATE_PED(0, model, spawnpoint.x, spawnpoint.y, spawnpoint.z, 0, false, true);
@@ -856,7 +868,7 @@ Ped SURVIVAL::SpawnEnemy(int wave, bool canSpawnJesus, bool explosive)
 				model = MISC::GET_HASH_KEY(data.modelName.c_str());
 			}
 
-            Vector3 spawnpoint = safeSpawnpoint();
+            Vector3 spawnpoint = safeSpawnpoint(false, explosive);
 			INIT::LoadModel(model);
 			AddModelToUnload(model);
 			Ped ped = PED::CREATE_PED(0, model, spawnpoint.x, spawnpoint.y, spawnpoint.z, 0, false, true);
