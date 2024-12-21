@@ -19,6 +19,9 @@ std::vector<Enemy> deadEnemies;
 JESUS::Jesus enemyJesus;
 bool jesusSpawned;
 bool suicidalLimitReached;
+int lastTankCheck = 0;
+int lastExplosiveCheck = 0;
+int lastBeastCheck = 0;
 
 std::vector<Hash> alienWeapons =
 {
@@ -1170,7 +1173,16 @@ bool ShouldSpawnJuggernaut()
 {
     if (SURVIVAL::SurvivalData::zombies)
     {
-        return SURVIVAL::SurvivalData::CurrentWave >= 5 && !jugLimitReached && MISC::GET_RANDOM_INT_IN_RANGE(0, 100) >= (5 + (SURVIVAL::SurvivalData::CurrentWave * 2));
+        bool timeLimit = false;
+        int currentTime = MISC::GET_GAME_TIMER();
+
+        if (currentTime - lastTankCheck >= 4000)
+        {
+            timeLimit = true;
+            lastTankCheck = currentTime;
+        }
+
+        return SURVIVAL::SurvivalData::CurrentWave >= 5 && !jugLimitReached && ENEMIES::EnemiesData::currentWaveSize >= SURVIVAL::SurvivalData::MaxWaveSize / 2 && timeLimit ;
     }
 
     return (SURVIVAL::SurvivalData::CurrentWave >= 8 || SURVIVAL::SurvivalData::hardcore) && SURVIVAL::SpawnerData::hasJuggernaut && !jugSpawned && ENEMIES::EnemiesData::currentWaveSize >= SURVIVAL::SurvivalData::MaxWaveSize / 2;
@@ -1180,7 +1192,16 @@ bool ShouldSpawnAnimal()
 {
     if (SURVIVAL::SurvivalData::zombies)
     {
-        return SURVIVAL::SurvivalData::CurrentWave >= 4 && !dogLimitReached && MISC::GET_RANDOM_INT_IN_RANGE(0, 100) >= (5 + (SURVIVAL::SurvivalData::CurrentWave * 1.2));
+        bool timeLimit = false;
+        int currentTime = MISC::GET_GAME_TIMER();
+
+        if (currentTime - lastBeastCheck >= 3000)
+        {
+            timeLimit = true;
+            lastBeastCheck = currentTime;
+        }
+
+        return SURVIVAL::SurvivalData::CurrentWave >= 4 && !dogLimitReached && timeLimit;
     }
 
     return (SURVIVAL::SurvivalData::CurrentWave >= 7 || SURVIVAL::SurvivalData::hardcore) && SURVIVAL::SpawnerData::hasDogs && !dogLimitReached;
@@ -1190,7 +1211,16 @@ bool ShouldSpawnSuicidal()
 {
     if (SURVIVAL::SurvivalData::zombies)
     {
-        return SURVIVAL::SurvivalData::CurrentWave >= 6 && !suicidalLimitReached && MISC::GET_RANDOM_INT_IN_RANGE(0, 100) >= (5 + (SURVIVAL::SurvivalData::CurrentWave * 1.1));
+        bool timeLimit = false;
+        int currentTime = MISC::GET_GAME_TIMER();
+
+        if (currentTime - lastExplosiveCheck >= 2000)
+        {
+            timeLimit = true;
+            lastExplosiveCheck = currentTime;
+        }
+
+        return SURVIVAL::SurvivalData::CurrentWave >= 6 && !suicidalLimitReached && timeLimit && CALC::RanInt(100, 1) <= 45;
     }
 
     return (SURVIVAL::SurvivalData::CurrentWave >= 5 || SURVIVAL::SurvivalData::hardcore) && SURVIVAL::SpawnerData::hasSuicidal && CALC::RanInt(100, 1) <= 20 && !suicidalLimitReached;
