@@ -666,10 +666,12 @@ void InitializeAnimal(Ped ped)
         {
         case 0x8B297EF4:
             PED::SET_PED_MAX_HEALTH(ped, 500);
+            ENTITY::SET_ENTITY_HEALTH(ped, 500, 0, NULL);
             PlayZombieSound(ped, 7, 10);
             break;
         case 0xAA4B67D0:
             PED::SET_PED_MAX_HEALTH(ped, 350);
+            ENTITY::SET_ENTITY_HEALTH(ped, 350, 0, NULL);
             PlayZombieSound(ped, 6, 10);
             break;
         }
