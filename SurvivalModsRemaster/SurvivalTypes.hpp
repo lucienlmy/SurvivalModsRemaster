@@ -5,7 +5,7 @@
 enum eEnemyType
 {
 	Generic,
-	Suicidal,
+	Explosive,
 	Juggernaut,
 	Animal,
 	Zombie
@@ -17,6 +17,7 @@ struct Enemy
 	bool timer = false;
 	bool exploded = false;
 	bool playedDeathSound = false;
+	bool fiery = false;
 	Vector3 deadCoords{};
 	int timeOfDeath = 0;
 	int lastHealth = 0;

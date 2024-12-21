@@ -24,8 +24,6 @@ namespace ENEMIES
 		static bool canSpawnMore;
 		static bool limitReached;
 		static int currentWaveSize;
-		static int currentDogCount;
-		static int currentJugCount;
 		static int kills;
 	};
 
