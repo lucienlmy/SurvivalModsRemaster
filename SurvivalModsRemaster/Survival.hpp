@@ -28,6 +28,7 @@ namespace SURVIVAL
         static int timedTimeLeft;
         static bool cheated;
         static bool hardcore;
+        static bool zombies;
 	};
 
     void StartMission(bool infiniteWaves, bool timed, bool hardcore);

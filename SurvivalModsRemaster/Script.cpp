@@ -47,7 +47,9 @@ enum eMarkers {
     BunkerEntrance,
     BunkerExit,
     LabEntrance,
-    LabExit
+    LabExit,
+    CemeteryEntrance,
+    CemeteryExit
 };
 
 static std::vector<TPPoint> teleportPoints = std::vector<TPPoint>{
@@ -55,6 +57,8 @@ static std::vector<TPPoint> teleportPoints = std::vector<TPPoint>{
         TPPoint(893.14f, -3245.89f, -99.25251f),
         TPPoint(456.766663f, 5571.864f, 780.1841f),
         TPPoint(244.57f, 6163.39f, -160.42f),
+        TPPoint(-1729.10, -193.10, 58.52),
+        TPPoint(3224.75, -4702.88, 112.74)
 };
 
 static std::vector<Blip> entranceBlips = std::vector<Blip>();
@@ -160,6 +164,8 @@ void createTPBlips() {
     entranceBlips.push_back(BLIPS::Create(coords.x, coords.y, coords.z, 557, eBlipColor::BlipColorWhite, "Bunker"));
     coords = teleportPoints.at(eMarkers::LabEntrance);
     entranceBlips.push_back(BLIPS::Create(coords.x, coords.y, coords.z, 499, eBlipColor::BlipColorWhite, "Secret Lab"));
+    coords = teleportPoints.at(eMarkers::CemeteryEntrance);
+    entranceBlips.push_back(BLIPS::Create(coords.x, coords.y, coords.z, 465, eBlipColor::BlipColorWhite, "Cemetery"));
 }
 
 const char* getHelpText(size_t index) {
@@ -172,9 +178,70 @@ const char* getHelpText(size_t index) {
             return "Press ~INPUT_CONTEXT~ to enter the lab.";
         case eMarkers::LabExit:
             return "Press ~INPUT_CONTEXT~ to exit the lab.";
+        case eMarkers::CemeteryEntrance:
+            return "Press ~INPUT_CONTEXT~ to investigate.";
+        case eMarkers::CemeteryExit:
+            return "Press ~INPUT_CONTEXT~ to leave.";
         default:
             return "INVALID INDEX";
     }
+}
+
+void LoadNY()
+{
+    STREAMING::REQUEST_IPL("prologue01k");
+    STREAMING::REQUEST_IPL("prologue02");
+    STREAMING::REQUEST_IPL("prologue03");
+    STREAMING::REQUEST_IPL("prologue03b");
+    STREAMING::REQUEST_IPL("prologue03_grv_dug");
+    STREAMING::REQUEST_IPL("prologue04");
+    STREAMING::REQUEST_IPL("prologue04b");
+    STREAMING::REQUEST_IPL("prologue05");
+    STREAMING::REQUEST_IPL("prologue05b");
+    STREAMING::REQUEST_IPL("prologue_occl");
+    STREAMING::REQUEST_IPL("prologue_LODLights");
+    STREAMING::REQUEST_IPL("prologue_DistantLights");
+
+    while (
+        !STREAMING::IS_IPL_ACTIVE("prologue01k") ||
+        !STREAMING::IS_IPL_ACTIVE("prologue02") ||
+        !STREAMING::IS_IPL_ACTIVE("prologue03") ||
+        !STREAMING::IS_IPL_ACTIVE("prologue03b") ||
+        !STREAMING::IS_IPL_ACTIVE("prologue03_grv_dug") ||
+        !STREAMING::IS_IPL_ACTIVE("prologue04") ||
+        !STREAMING::IS_IPL_ACTIVE("prologue04b") ||
+        !STREAMING::IS_IPL_ACTIVE("prologue05") ||
+        !STREAMING::IS_IPL_ACTIVE("prologue05b") ||
+        !STREAMING::IS_IPL_ACTIVE("prologue_occl") ||
+        !STREAMING::IS_IPL_ACTIVE("prologue_LODLights") ||
+        !STREAMING::IS_IPL_ACTIVE("prologue_DistantLights")
+        ) {
+        WAIT(50);
+    }
+
+    HUD::SET_MINIMAP_IN_PROLOGUE(true);
+    ZONE::SET_ZONE_ENABLED(ZONE::GET_ZONE_FROM_NAME_ID("PrLog"), true);
+    STREAMING::SET_MAPDATACULLBOX_ENABLED("prologue", true);
+}
+
+void UnloadNY()
+{
+    STREAMING::REMOVE_IPL("prologue01k");
+    STREAMING::REMOVE_IPL("prologue02");
+    STREAMING::REMOVE_IPL("prologue03");
+    STREAMING::REMOVE_IPL("prologue03b");
+    STREAMING::REMOVE_IPL("prologue03_grv_dug");
+    STREAMING::REMOVE_IPL("prologue04");
+    STREAMING::REMOVE_IPL("prologue04b");
+    STREAMING::REMOVE_IPL("prologue05");
+    STREAMING::REMOVE_IPL("prologue05b");
+    STREAMING::REMOVE_IPL("prologue_occl");
+    STREAMING::REMOVE_IPL("prologue_LODLights");
+    STREAMING::REMOVE_IPL("prologue_DistantLights");
+
+    HUD::SET_MINIMAP_IN_PROLOGUE(false);
+    ZONE::SET_ZONE_ENABLED(ZONE::GET_ZONE_FROM_NAME_ID("PrLog"), false);
+    STREAMING::SET_MAPDATACULLBOX_ENABLED("prologue", false);
 }
 
 void toggleInterior(size_t index) {
@@ -215,6 +282,16 @@ void toggleInterior(size_t index) {
             AUDIO::PLAY_SOUND_FRONTEND(-1, "DOOR_CLOSE", "CABLE_CAR_SOUNDS", true);
             break;
         }
+        case eMarkers::CemeteryEntrance:
+        {
+            LoadNY();
+            break;
+        }
+        case eMarkers::CemeteryExit:
+        {
+            UnloadNY();
+            break;
+        }
         default:
             break;
     }
@@ -231,13 +308,10 @@ void processMarkers() {
         v3Coords.z = coords.z;
         Vector3 playerCoords = ENTITY::GET_ENTITY_COORDS(playerId, true);
 
-        if (!CALC::IsInRange_2(v3Coords, playerCoords, 200))
+        if (!CALC::IsInRange_2(v3Coords, playerCoords, 5))
+        {
             continue;
-
-        GRAPHICS::DRAW_MARKER(1, v3Coords.x, v3Coords.y, v3Coords.z, 0, 1, 0, 0, 0, 0, 2, 2, 2, 255, 255, 0, 100, false, false, 2, false, nullptr, nullptr, false);
-
-        if (!CALC::IsInRange_2(v3Coords, playerCoords, 2))
-            continue;
+        }
 
         SCREEN::ShowHelpText(getHelpText(i), true);
 
@@ -444,4 +518,6 @@ void OnAbort() {
         
         entranceBlips.clear();
     }
+
+    UnloadNY();
 }

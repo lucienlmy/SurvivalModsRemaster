@@ -62,10 +62,10 @@ void INTERMISSION::Process()
     TIMERS::RestartSpawnTimers();
     SURVIVAL::IncrementWave();
     ENEMIES::ResetCounters();
-    SURVIVAL::SurvivalData::MaxWaveSize = 10 + (5 * SURVIVAL::SurvivalData::CurrentWave);
+    SURVIVAL::SurvivalData::MaxWaveSize = 10 + (3 * SURVIVAL::SurvivalData::CurrentWave);
 
     if (SURVIVAL::SurvivalData::hardcore)
-        SURVIVAL::SurvivalData::MaxWaveSize += 15;
+        SURVIVAL::SurvivalData::MaxWaveSize += 8;
 
     SURVIVAL::UpdateModels(SURVIVAL::SurvivalData::CurrentWave);
 

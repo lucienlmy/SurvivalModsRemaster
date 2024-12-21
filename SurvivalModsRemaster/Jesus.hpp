@@ -2,6 +2,7 @@
 
 #include <types.h>
 #include "Calculations.hpp"
+#include "SurvivalTypes.hpp"
 #include "natives.h"
 #include "enums.h"
 
@@ -11,7 +12,7 @@ namespace JESUS
 	{
 	public:
 		Ped ped;
-		Ped targetPed;
+		Enemy targetPed;
 		bool movingToPed;
 		bool revivingPed;
 		bool waiting = true;
@@ -19,7 +20,7 @@ namespace JESUS
 		explicit Jesus(Ped handle);
 		Jesus();
 		void SetHandle(Ped handle);
-		void SetTarget(Ped target);
+		void SetTarget(Enemy target);
 		void MoveToTarget();
 		void StartReviving();
 		void ReviveTarget();

@@ -5,9 +5,9 @@ MUSIC::TrackGroups MUSIC::MusicData::currentTrackGroup;
 bool MUSIC::MusicData::finalWaveHI;
 int last;
 
-void MUSIC::PrepareTracks()
+void MUSIC::PrepareTracks(int forced)
 {
-    int value = CALC::RanInt(6, 0);
+    int value = forced == -1 ? CALC::RanInt(6, 0) : forced;
     MusicData::currentTrackGroup = static_cast<TrackGroups>(value);
 }
 
@@ -50,9 +50,14 @@ void MUSIC::StartTrack()
         AUDIO::TRIGGER_MUSIC_EVENT("TUNER_IDLE_START");
         break;
     }
-    case TrackGroups::Contract:
+    case TrackGroups::Hacker:
     {
-        AUDIO::TRIGGER_MUSIC_EVENT("FIXER_IDLE_START");
+        AUDIO::TRIGGER_MUSIC_EVENT("MP242_SUSPENSE_START");
+        break;
+    }
+    case TrackGroups::SurvivalZombies:
+    {
+        AUDIO::TRIGGER_MUSIC_EVENT("MP241_HSM_INTRO_START");
         break;
     }
     default:
@@ -94,9 +99,14 @@ void MUSIC::LowIntensityTrack()
         AUDIO::TRIGGER_MUSIC_EVENT("TUNER_SUSPENSE");
         break;
     }
-    case TrackGroups::Contract:
+    case TrackGroups::Hacker:
     {
-        AUDIO::TRIGGER_MUSIC_EVENT("FIXER_SUSPENSE");
+        AUDIO::TRIGGER_MUSIC_EVENT("MP242_SUSPENSE");
+        break;
+    }
+    case TrackGroups::SurvivalZombies:
+    {
+        AUDIO::TRIGGER_MUSIC_EVENT("MP241_HSM_W1_END");
         break;
     }
     default:
@@ -108,10 +118,11 @@ void MidIntensityTrack(int wave)
 {
     switch (MUSIC::MusicData::currentTrackGroup)
     {
+    case MUSIC::TrackGroups::SurvivalZombies:
     case MUSIC::TrackGroups::SurvivalPrimary:
     {
         char evName[100];
-        strcpy_s(evName, "SM_W");
+        strcpy_s(evName, MUSIC::MusicData::currentTrackGroup == MUSIC::TrackGroups::SurvivalZombies ? "MP241_HSM_W" : "SM_W");
         strcat_s(evName, std::to_string(wave > 10 ? 10 : wave).c_str());
         strcat_s(evName, "_MED");
         AUDIO::TRIGGER_MUSIC_EVENT(evName);
@@ -177,15 +188,15 @@ void MidIntensityTrack(int wave)
         }
         break;
     }
-    case MUSIC::TrackGroups::Contract:
+    case MUSIC::TrackGroups::Hacker:
     {
         if (wave <= 3)
         {
-            AUDIO::TRIGGER_MUSIC_EVENT("FIXER_MED_INTENSITY");
+            AUDIO::TRIGGER_MUSIC_EVENT("MP242_MED_INTENSITY");
         }
         else
         {
-            AUDIO::TRIGGER_MUSIC_EVENT("FIXER_GUNFIGHT");
+            AUDIO::TRIGGER_MUSIC_EVENT("MP242_GUNFIGHT");
         }
         break;
     }
@@ -198,10 +209,11 @@ void HighIntensityTrack(int wave)
 {
     switch (MUSIC::MusicData::currentTrackGroup)
     {
+    case MUSIC::TrackGroups::SurvivalZombies:
     case MUSIC::TrackGroups::SurvivalPrimary:
     {
         char evName[100];
-        strcpy_s(evName, "SM_W");
+        strcpy_s(evName, MUSIC::MusicData::currentTrackGroup == MUSIC::TrackGroups::SurvivalZombies ? "MP241_HSM_W" : "SM_W");
         strcat_s(evName, std::to_string(wave > 10 ? 10 : wave).c_str());
         strcat_s(evName, "_HIGH");
         AUDIO::TRIGGER_MUSIC_EVENT(evName);
@@ -232,9 +244,9 @@ void HighIntensityTrack(int wave)
         AUDIO::TRIGGER_MUSIC_EVENT("TUNER_VEHICLE_ACTION");
         break;
     }
-    case MUSIC::TrackGroups::Contract:
+    case MUSIC::TrackGroups::Hacker:
     {
-        AUDIO::TRIGGER_MUSIC_EVENT("FIXER_VEHICLE_ACTION");
+        AUDIO::TRIGGER_MUSIC_EVENT("MP242_VEHICLE_ACTION");
         break;
     }
     default:
@@ -244,8 +256,8 @@ void HighIntensityTrack(int wave)
 
 void MUSIC::Process(int enemyCount, int maxCount)
 {
-    if (maxCount < 60)
-        maxCount = 60;
+    if (maxCount < 40)
+        maxCount = 40;
 
     int intensity = ceil((static_cast<float>(enemyCount) / static_cast<float>(maxCount)) * 10.0f);
 

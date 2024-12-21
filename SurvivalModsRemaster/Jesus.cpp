@@ -7,8 +7,8 @@ JESUS::Jesus::Jesus()
 	movingToPed = false;
 	revivingPed = false;
 	waiting = true;
-	targetPed = 0;
 	ped = 0;
+	targetPed.ped = 0;
 }
 
 void JESUS::Jesus::SetHandle(Ped handle)
@@ -21,13 +21,13 @@ JESUS::Jesus::Jesus(Ped handle)
 	movingToPed = false;
 	revivingPed = false;
 	waiting = true;
-	targetPed = 0;
 	ped = handle;
+	targetPed.ped = 0;
 
 	StartWaiting();
 }
 
-void JESUS::Jesus::SetTarget(Ped target)
+void JESUS::Jesus::SetTarget(Enemy target)
 {
 	targetPed = target;
 }
@@ -36,7 +36,7 @@ void JESUS::Jesus::MoveToTarget()
 {
 	waiting = false;
 	TASK::CLEAR_PED_TASKS(ped);
-	TASK::TASK_GO_TO_ENTITY(ped, targetPed, -1, 2, 10, 1073741824.0f, 0);
+	TASK::TASK_GO_TO_ENTITY(ped, targetPed.ped, -1, 2, 10, 1073741824.0f, 0);
 	movingToPed = true;
 }
 
@@ -59,12 +59,12 @@ void JESUS::Jesus::ReviveTarget()
 	animTimerStarted = false;
 	waiting = true;
 	StartWaiting();
-	int health = ENTITY::GET_ENTITY_MAX_HEALTH(targetPed);
-	ENTITY::SET_ENTITY_COLLISION(targetPed, true, false);
-	PED::RESURRECT_PED(targetPed);
-	ENTITY::SET_ENTITY_HEALTH(targetPed, health, 0);
-	ENTITY::SET_ENTITY_MAX_HEALTH(targetPed, health);
-	TASK::CLEAR_PED_TASKS_IMMEDIATELY(targetPed);
+	int health = ENTITY::GET_ENTITY_MAX_HEALTH(targetPed.ped);
+	ENTITY::SET_ENTITY_COLLISION(targetPed.ped, true, false);
+	PED::RESURRECT_PED(targetPed.ped);
+	ENTITY::SET_ENTITY_HEALTH(targetPed.ped, health, 0, NULL);
+	ENTITY::SET_ENTITY_MAX_HEALTH(targetPed.ped, health);
+	TASK::CLEAR_PED_TASKS_IMMEDIATELY(targetPed.ped);
 }
 
 bool JESUS::Jesus::CanRevive()
@@ -89,12 +89,12 @@ bool JESUS::Jesus::CanRevive()
 
 bool JESUS::Jesus::HasTarget() const
 {
-	return targetPed != 0;
+	return targetPed.ped != 0;
 }
 
 bool JESUS::Jesus::IsInRange() const
 {
-	return CALC::IsInRange_2(ENTITY::GET_ENTITY_COORDS(ped, true), ENTITY::GET_ENTITY_COORDS(targetPed, true), 2);
+	return CALC::IsInRange_2(ENTITY::GET_ENTITY_COORDS(ped, true), ENTITY::GET_ENTITY_COORDS(targetPed.ped, true), 2);
 }
 
 void JESUS::Jesus::StartWaiting()
