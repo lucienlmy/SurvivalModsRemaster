@@ -72,6 +72,40 @@ void UnloadZombieResources()
 	STREAMING::REMOVE_CLIP_SET("clipset@anim@ingame@melee@unarmed@streamed_taunts_zombie");
 }
 
+void LoadZombieResources()
+{
+	STREAMING::REQUEST_ANIM_DICT("anim@scripted@surv@ig2_zombie_spawn@shambler@");
+	STREAMING::REQUEST_ANIM_DICT("anim@scripted@surv@ig2_zombie_spawn@runner@");
+	STREAMING::REQUEST_CLIP_SET("clipset@anim@ingame@move_m@zombie@core");
+	STREAMING::REQUEST_CLIP_SET("clipset@anim@ingame@move_m@zombie@strafe");
+	STREAMING::REQUEST_CLIP_SET("clipset@anim@ingame@melee@unarmed@streamed_core_zombie");
+	STREAMING::REQUEST_CLIP_SET("clipset@anim@ingame@melee@unarmed@streamed_variations_zombie");
+	STREAMING::REQUEST_CLIP_SET("clipset@anim@ingame@melee@unarmed@streamed_taunts_zombie");
+	AUDIO::REQUEST_SCRIPT_AUDIO_BANK("DLC_24-1/YK_Survival", false, -1);
+	AUDIO::REQUEST_SCRIPT_AUDIO_BANK("DLC_24-1/YK_Survival_01", false, -1);
+	AUDIO::REQUEST_SCRIPT_AUDIO_BANK("DLC_24-1/YK_Survival_02", false, -1);
+}
+
+void UnloadZombieResources()
+{
+	STREAMING::REMOVE_ANIM_DICT("anim@scripted@surv@ig2_zombie_spawn@shambler@");
+	STREAMING::REMOVE_ANIM_DICT("anim@scripted@surv@ig2_zombie_spawn@runner@");
+	STREAMING::REMOVE_CLIP_SET("clipset@anim@ingame@move_m@zombie@core");
+	STREAMING::REMOVE_CLIP_SET("clipset@anim@ingame@move_m@zombie@strafe");
+	STREAMING::REMOVE_CLIP_SET("clipset@anim@ingame@melee@unarmed@streamed_core_zombie");
+	STREAMING::REMOVE_CLIP_SET("clipset@anim@ingame@melee@unarmed@streamed_variations_zombie");
+	STREAMING::REMOVE_CLIP_SET("clipset@anim@ingame@melee@unarmed@streamed_taunts_zombie");
+
+	if (AUDIO::IS_AUDIO_SCENE_ACTIVE("DLC_24-1_YK_Mixer_Scene"))
+	{
+		AUDIO::START_AUDIO_SCENE("DLC_24-1_YK_Mixer_Scene");
+	}
+
+	AUDIO::RELEASE_NAMED_SCRIPT_AUDIO_BANK("DLC_24-1/YK_Survival");
+	AUDIO::RELEASE_NAMED_SCRIPT_AUDIO_BANK("DLC_24-1/YK_Survival_01");
+	AUDIO::RELEASE_NAMED_SCRIPT_AUDIO_BANK("DLC_24-1/YK_Survival_02");
+}
+
 void SURVIVAL::StartMission(bool infiniteWaves, bool timed, bool hardcore)
 {
 	SurvivalData::MissionID = TriggerPedsData::names.at(Data::TPIndex);
@@ -90,7 +124,18 @@ void SURVIVAL::StartMission(bool infiniteWaves, bool timed, bool hardcore)
 	SurvivalData::InfiniteWaves = infiniteWaves;
 	SurvivalData::timed = timed;
 	SetEnemyAllies();
-	MUSIC::PrepareTracks();
+
+	while (SurvivalData::zombies && (!AUDIO::REQUEST_SCRIPT_AUDIO_BANK("DLC_24-1/YK_Survival", false, -1) || !AUDIO::REQUEST_SCRIPT_AUDIO_BANK("DLC_24-1/YK_Survival_02", false, -1)))
+	{
+		WAIT(50);
+	}
+
+	if (SURVIVAL::SurvivalData::zombies && !AUDIO::IS_AUDIO_SCENE_ACTIVE("DLC_24-1_YK_Mixer_Scene"))
+	{
+		AUDIO::START_AUDIO_SCENE("DLC_24-1_YK_Mixer_Scene");
+	}
+
+	MUSIC::PrepareTracks(SurvivalData::zombies ? 7 : -1);
 	AUDIO::SET_AUDIO_FLAG("WantedMusicDisabled", true);
     Initialize();
 }
@@ -116,11 +161,19 @@ void SURVIVAL::Initialize()
 	{
 		MISC::SET_WEATHER_TYPE_OVERTIME_PERSIST("HALLOWEEN", 30);
 		MISC::SET_RAIN(0.5f);
+		CLOCK::ADVANCE_CLOCK_TIME_TO(0, 0, 0);
+		CLOCK::PAUSE_CLOCK(true);
 	}
 	else if (SpawnerData::isXmas)
 	{
 		MISC::SET_WEATHER_TYPE_OVERTIME_PERSIST("BLIZZARD", 30);
 		MISC::SET_RAIN(0.5f);
+	}
+	else if (SurvivalData::zombies)
+	{
+		MISC::SET_WEATHER_TYPE_OVERTIME_PERSIST("BLIZZARD", 30);
+		CLOCK::ADVANCE_CLOCK_TIME_TO(0, 0, 0);
+		CLOCK::PAUSE_CLOCK(true);
 	}
 
 	SurvivalData::Started = true;
@@ -133,6 +186,9 @@ bool SURVIVAL::PlayerCheated()
 
 void SURVIVAL::ProcessSurvival()
 {
+	VEHICLE::SET_VEHICLE_DENSITY_MULTIPLIER_THIS_FRAME(0.0f);
+	PED::SET_PED_DENSITY_MULTIPLIER_THIS_FRAME(0.0f);
+
 	if (!SurvivalData::cheated && PlayerCheated())
 	{
 		SurvivalData::cheated = true;
@@ -275,8 +331,9 @@ void SURVIVAL::CompleteSurvival()
 	SurvivalData::Started = false;
 	SurvivalData::cheated = false;
 
-	if (SpawnerData::isXmas || SpawnerData::isHalloween)
+	if (SpawnerData::isXmas || SpawnerData::isHalloween || SurvivalData::zombies)
 	{
+		CLOCK::PAUSE_CLOCK(false);
 		MISC::CLEAR_WEATHER_TYPE_PERSIST();
 		WAIT(0);
 		MISC::SET_WEATHER_TYPE_OVERTIME_PERSIST("CLEAR", 30);
@@ -290,6 +347,7 @@ void SURVIVAL::CompleteSurvival()
 	}
 
 	TriggerDelayedSpawn();
+	TIMERS::RestartTimers();
 }
 
 void SURVIVAL::IncrementWave()
@@ -302,6 +360,7 @@ void SURVIVAL::QuitSurvival(bool playerDied)
 	if (playerDied)
 	{
 		GiveReward(true);
+		UnloadNY();
 	}
 	else
 	{
@@ -325,8 +384,9 @@ void SURVIVAL::QuitSurvival(bool playerDied)
 	SurvivalData::Started = false;
 	SurvivalData::cheated = false;
 
-	if (SpawnerData::isXmas || SpawnerData::isHalloween)
+	if (SpawnerData::isXmas || SpawnerData::isHalloween || SurvivalData::zombies)
 	{
+		CLOCK::PAUSE_CLOCK(false);
 		MISC::CLEAR_WEATHER_TYPE_PERSIST();
 		WAIT(0);
 		MISC::SET_WEATHER_TYPE_OVERTIME_PERSIST("CLEAR", 30);
@@ -340,6 +400,7 @@ void SURVIVAL::QuitSurvival(bool playerDied)
 	}
 
 	TriggerDelayedSpawn();
+	TIMERS::RestartTimers();
 }
 
 void SURVIVAL::ScriptQuit()
@@ -355,8 +416,9 @@ void SURVIVAL::ScriptQuit()
 	SurvivalData::Started = false;
 	SurvivalData::cheated = false;
 
-	if (SpawnerData::isXmas || SpawnerData::isHalloween)
+	if (SpawnerData::isXmas || SpawnerData::isHalloween || SurvivalData::zombies)
 	{
+		CLOCK::PAUSE_CLOCK(false);
 		MISC::CLEAR_WEATHER_TYPE_PERSIST();
 		WAIT(0);
 		MISC::SET_WEATHER_TYPE_OVERTIME_PERSIST("CLEAR", 30);
@@ -368,6 +430,8 @@ void SURVIVAL::ScriptQuit()
 	{
 		UnloadZombieResources();
 	}
+
+	TIMERS::RestartTimers();
 }
 
 void SURVIVAL::TriggerDelayedSpawn()

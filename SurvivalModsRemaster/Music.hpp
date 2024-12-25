@@ -13,7 +13,8 @@ namespace MUSIC
 		Casino,
 		Casino2,
 		Tuner,
-		Hacker
+		Hacker,
+		SurvivalZombies
 	};
 
 	struct MusicData
@@ -22,7 +23,7 @@ namespace MUSIC
 		static bool finalWaveHI;
 	};
 
-	void PrepareTracks();
+	void PrepareTracks(int forced = -1);
 	void StopTrack();
 	void StartTrack();
 	void LowIntensityTrack();

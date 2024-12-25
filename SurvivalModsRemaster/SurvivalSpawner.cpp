@@ -37,6 +37,20 @@ bool SURVIVAL::SpawnerData::hasSuicidal;
 bool SURVIVAL::SpawnerData::hasBoats;
 std::vector<std::string> jugModels;
 std::string dogModel;
+std::vector<Hash> loadedModels = std::vector<Hash>();
+
+void AddModelToUnload(Hash model)
+{
+	for (Hash& model : loadedModels)
+	{
+		if (model == model)
+		{
+			return;
+		}
+	}
+
+	loadedModels.push_back(model);
+}
 
 ePickupType SURVIVAL::GetPickupType(const std::string& pickupModel)
 {
@@ -363,6 +377,13 @@ void SURVIVAL::ClearVectors()
 	SpawnerData::strongWeapons.clear();
 	jugModels.clear();
 	dogModel.clear();
+
+	for (Hash& model : loadedModels)
+	{
+		INIT::UnloadModel(model);
+	}
+
+	loadedModels.clear();
 }
 
 void SURVIVAL::LoadSurvival(const std::string& survivalID)
@@ -563,8 +584,9 @@ void SURVIVAL::SetComponentVariation(Ped ped, int componentId, int drawableId, i
 	}
 }
 
-Vector3 safeSpawnpoint() {
+Vector3 safeSpawnpoint(bool isAnimal = false, bool isExplosive = false) {
     Vector3 playerCoords = ENTITY::GET_ENTITY_COORDS(PLAYER::PLAYER_PED_ID(), 1);
+	bool doRangeCheck = !SURVIVAL::SurvivalData::zombies || (SURVIVAL::SurvivalData::zombies && !isAnimal && !isExplosive);
 
     if (enemySpawnpoints.size() > 1) {
         Vector3 coords;
@@ -572,7 +594,18 @@ Vector3 safeSpawnpoint() {
         do {
             size_t index = CALC::RanInt(enemySpawnpoints.size() - (size_t)1, (size_t)0);
             coords = enemySpawnpoints.at(index);
-        } while(CALC::IsInRange_2(coords, playerCoords, 20.0f));
+		} while (doRangeCheck && CALC::IsInRange_2(coords, playerCoords, 20.0f));
+
+		if (SURVIVAL::SurvivalData::zombies)
+		{
+			float groundZ;
+			MISC::GET_GROUND_Z_FOR_3D_COORD(coords.x, coords.y, coords.z, &groundZ, 0, 0);
+			
+			if (groundZ > 0)
+			{
+				coords.z = groundZ;
+			}
+		}
 
         return coords;
     }
@@ -593,12 +626,8 @@ Ped SURVIVAL::SpawnFreemodeCustom(const std::string& outfit, bool isMale, bool i
 		model = MISC::GET_HASH_KEY("MP_F_Freemode_01");
 	}
 
-	STREAMING::REQUEST_MODEL(model);
-
-	while (!STREAMING::HAS_MODEL_LOADED(model))
-	{
-		WAIT(250);
-	}
+	INIT::LoadModel(model);
+	AddModelToUnload(model);
 
 	Ped ped;
 
@@ -611,8 +640,6 @@ Ped SURVIVAL::SpawnFreemodeCustom(const std::string& outfit, bool isMale, bool i
 	{
 		ped = PED::CREATE_PED_INSIDE_VEHICLE(vehicle, 0, model, seat, false, true);
 	}
-
-	STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(model);
 
 	if (outfit.find("_JUGGERNAUT_") != std::string::npos && isMale)
 	{
@@ -728,6 +755,16 @@ Ped SURVIVAL::SpawnFreemodeCustom(const std::string& outfit, bool isMale, bool i
 
 Ped SURVIVAL::SpawnJuggernaut()
 {
+	if (SurvivalData::zombies)
+	{
+		Hash model = INIT::LoadModel("G_M_M_Zombie_02");
+		AddModelToUnload(model);
+		Vector3 spawnpoint = safeSpawnpoint();
+		Ped ped = PED::CREATE_PED(0, model, spawnpoint.x, spawnpoint.y, spawnpoint.z, 0, false, true);
+
+		return ped;
+	}
+
 	int index;
 
 	if (SpawnerData::isHalloween)
@@ -752,35 +789,53 @@ Ped SURVIVAL::SpawnJuggernaut()
 	else
 	{
 		Hash model = INIT::LoadModel(name.c_str());
-		Ped ped;
+		AddModelToUnload(model);
 		Vector3 spawnpoint = safeSpawnpoint();
-		ped = PED::CREATE_PED(0, model, spawnpoint.x, spawnpoint.y, spawnpoint.z, 0, false, true);
-		STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(model);
+		Ped ped = PED::CREATE_PED(0, model, spawnpoint.x, spawnpoint.y, spawnpoint.z, 0, false, true);
 
 		return ped;
 	}
 }
 
+const char* GetDogModel()
+{
+	if (!SURVIVAL::SurvivalData::zombies)
+	{
+		return dogModel.c_str();
+	}
+
+	int randomInt = MISC::GET_RANDOM_INT_IN_RANGE(0, 100);
+
+	if (randomInt <= 60)
+	{
+		return "A_C_Boar_02";
+	}
+	else
+	{
+		return "A_C_Deer_02";
+	}
+}
+
 Ped SURVIVAL::SpawnDog()
 {
-    Vector3 spawnpoint = safeSpawnpoint();
-	Hash model = INIT::LoadModel(dogModel.c_str());
+    Vector3 spawnpoint = safeSpawnpoint(true);
+	Hash model = INIT::LoadModel(GetDogModel());
+	AddModelToUnload(model);
 	Ped ped = PED::CREATE_PED(0, model, spawnpoint.x, spawnpoint.y, spawnpoint.z, 0, false, true);
-	INIT::UnloadModel(model);
 
 	return ped;
 }
 
-Ped SURVIVAL::SpawnEnemy(int wave, bool canSpawnJesus)
+Ped SURVIVAL::SpawnEnemy(int wave, bool canSpawnJesus, bool explosive)
 {
-	if (SpawnerData::hasJesus && canSpawnJesus && (wave >= 7 || SURVIVAL::SurvivalData::hardcore))
+	if (!explosive && SpawnerData::hasJesus && canSpawnJesus && (wave >= 7 || SURVIVAL::SurvivalData::hardcore))
 	{
 		Hash model = 0xCE2CB751;
 		size_t index = CALC::RanInt(enemySpawnpoints.size() - (size_t)1, (size_t)0);
 		Vector3 spawnpoint = enemySpawnpoints.at(index);
 		INIT::LoadModel(model);
+		AddModelToUnload(model);
 		Ped ped = PED::CREATE_PED(0, model, spawnpoint.x, spawnpoint.y, spawnpoint.z, 0, false, true);
-		INIT::UnloadModel(model);
 
 		return ped;
 	}
@@ -790,14 +845,33 @@ Ped SURVIVAL::SpawnEnemy(int wave, bool canSpawnJesus)
 		SpawnData data = currentPedModels.at(index);
 
 		if (data.isMp)
+		{
 			return SpawnFreemodeCustom(data.modelName, data.isMale);
+		}
 		else
 		{
-			Hash model = MISC::GET_HASH_KEY(data.modelName.c_str());
-            Vector3 spawnpoint = safeSpawnpoint();
+			Hash model;
+
+			if (SURVIVAL::SurvivalData::zombies)
+			{
+				if (explosive)
+				{
+					model = MISC::GET_HASH_KEY("G_M_M_Zombie_03");
+				}
+				else
+				{
+					model = MISC::GET_HASH_KEY("G_M_M_Zombie_01");
+				}
+			}
+			else
+			{
+				model = MISC::GET_HASH_KEY(data.modelName.c_str());
+			}
+
+            Vector3 spawnpoint = safeSpawnpoint(false, explosive);
 			INIT::LoadModel(model);
+			AddModelToUnload(model);
 			Ped ped = PED::CREATE_PED(0, model, spawnpoint.x, spawnpoint.y, spawnpoint.z, 0, false, true);
-			INIT::UnloadModel(model);
 
 			return ped;
 		}
@@ -825,8 +899,9 @@ Vehicle SURVIVAL::SpawnVehicle(bool boat)
     }
 
 	Hash model = INIT::LoadModel(modelName.c_str());
+	AddModelToUnload(model);
 	Vehicle vehicle = VEHICLE::CREATE_VEHICLE(model, spawnpoint.x, spawnpoint.y, spawnpoint.z, 0, false, true, false);
-	INIT::UnloadModel(model);
+
 	return vehicle;
 }
 
@@ -837,8 +912,9 @@ Vehicle SURVIVAL::SpawnAircraft()
 	index = CALC::RanInt(aircraftSpawnpoints.size() - (size_t)1, (size_t)0);
 	Vector3 spawnPoint = aircraftSpawnpoints.at(index);
 	Hash model = INIT::LoadModel(modelName.c_str());
+	AddModelToUnload(model);
 	Vehicle vehicle = VEHICLE::CREATE_VEHICLE(model, spawnPoint.x, spawnPoint.y, spawnPoint.z, 0, false, true, false);
-	INIT::UnloadModel(model);
+
 	return vehicle;
 }
 
@@ -859,8 +935,9 @@ std::vector<Ped> SURVIVAL::SpawnEnemiesInVehicle(Vehicle vehicle, int wave)
 		{
 			Hash hash = MISC::GET_HASH_KEY(data.modelName.c_str());
 			INIT::LoadModel(hash);
+			AddModelToUnload(hash);
 			ped = PED::CREATE_PED_INSIDE_VEHICLE(vehicle, 0, hash, i, false, true);
-			INIT::UnloadModel(hash);
+
 		}
 		peds.push_back(ped);
 	}

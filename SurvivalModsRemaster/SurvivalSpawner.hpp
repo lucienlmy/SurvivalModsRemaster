@@ -32,7 +32,7 @@ namespace SURVIVAL
 	};
 
     void LoadSurvival(const std::string& survivalID);
-    Ped SpawnEnemy(int wave, bool canSpawnJesus);
+    Ped SpawnEnemy(int wave, bool canSpawnJesus, bool explosive = false);
     Ped SpawnDog();
     Ped SpawnJuggernaut();
     Vehicle SpawnVehicle(bool boat);

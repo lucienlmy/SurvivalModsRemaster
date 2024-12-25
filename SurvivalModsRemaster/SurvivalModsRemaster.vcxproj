@@ -179,6 +179,7 @@
     <ClInclude Include="SpawnData.hpp" />
     <ClInclude Include="Survival.hpp" />
     <ClInclude Include="SurvivalSpawner.hpp" />
+    <ClInclude Include="SurvivalTypes.hpp" />
     <ClInclude Include="Timers.hpp" />
     <ClInclude Include="UIScript.hpp" />
   </ItemGroup>

@@ -28,6 +28,8 @@ int TIMERS::TimedSurvival::timeLeft;
 int TIMERS::DogTimer::CurrentTime;
 int TIMERS::DogTimer::StartTime;
 bool TIMERS::DogTimer::Started;
+int soundId = -1;
+int lastSoundTime;
 
 bool TIMERS::ProcessTimedSurvivalTimer(int endTime)
 {
@@ -94,6 +96,12 @@ void TIMERS::RestartTimers()
 	SpawnEnemy::Started = false;
 	SpawnVehicle::Started = false;
 	DogTimer::Started = false;
+	
+	if (soundId != -1)
+	{
+		AUDIO::RELEASE_SOUND_ID(soundId);
+		soundId = -1;
+	}
 }
 
 void TIMERS::RestartLeavingZoneTimer()
@@ -119,10 +127,44 @@ void TIMERS::RestartIntermissionTimer()
 	Intermission::Started = false;
 }
 
+const char* GetSoundGroup()
+{
+	if (SURVIVAL::SurvivalData::zombies)
+	{
+		return "DLC_24-1_YK_Survival_Sounds";
+	}
+
+	return "DLC_VW_Survival_Sounds";
+}
+
+void PlaySound(const char* soundName, bool bypass = false)
+{
+	if (soundId >= 0 && !AUDIO::HAS_SOUND_FINISHED(soundId) && !bypass)
+	{
+		return;
+	}
+
+	if (soundId == -1)
+	{
+		soundId = AUDIO::GET_SOUND_ID();
+	}
+
+	AUDIO::PLAY_SOUND_FRONTEND(soundId, soundName, GetSoundGroup(), true);
+}
+
 bool TIMERS::ProcessIntermissionTimer()
 {
 	if (!Intermission::Started)
 	{
+		if (SURVIVAL::SurvivalData::CurrentWave == 0)
+		{
+			PlaySound("Survival_Failed", true);
+		}
+		else
+		{
+			PlaySound("Round_Passed", true);
+		}
+		
 		Intermission::Started = true;
 		Intermission::StartTime = MISC::GET_GAME_TIMER();
 		return false;
@@ -134,7 +176,15 @@ bool TIMERS::ProcessIntermissionTimer()
 
 		if (Intermission::CurrentTime - Intermission::StartTime >= Data::intermissionDuration)
 		{
+			PlaySound("Countdown_Tick_Last", true);
+
 			return true;
+		}
+
+		if (Intermission::timeLeft < 9 && Intermission::CurrentTime - lastSoundTime >= 1000)
+		{
+			lastSoundTime = Intermission::CurrentTime;
+			PlaySound("Countdown_Tick", true);
 		}
 
 		return false;
@@ -162,6 +212,11 @@ bool TIMERS::ProcessLeavingZoneTimer()
 		{
 			LeavingZone::Started = false;
 			return true;
+		}
+
+		if (soundId >= 0 && AUDIO::HAS_SOUND_FINISHED(soundId))
+		{
+			AUDIO::PLAY_SOUND_FRONTEND(soundId, "Out_of_Bounds", "MP_MISSION_COUNTDOWN_SOUNDSET", false);
 		}
 
 		return false;

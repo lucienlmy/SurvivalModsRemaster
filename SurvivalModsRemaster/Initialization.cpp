@@ -56,22 +56,33 @@ void INIT::UnloadModel(Hash model)
 
 void INIT::LoadModel(Hash model)
 {
+    if (STREAMING::HAS_MODEL_LOADED(model))
+    {
+        return;
+    }
+
     STREAMING::REQUEST_MODEL(model);
 
     while (!STREAMING::HAS_MODEL_LOADED(model))
     {
-        WAIT(50);
+        WAIT(1);
     }
 }
 
 Hash INIT::LoadModel(const char* modelName)
 {
     Hash modelHash = MISC::GET_HASH_KEY(modelName);
+
+    if (STREAMING::HAS_MODEL_LOADED(modelHash))
+    {
+        return modelHash;
+    }
+
     STREAMING::REQUEST_MODEL(modelHash);
 
     while (!STREAMING::HAS_MODEL_LOADED(modelHash))
     {
-        WAIT(50);
+        WAIT(1);
     }
 
     return modelHash;
