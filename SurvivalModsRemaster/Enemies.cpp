@@ -40,7 +40,7 @@ void ENEMIES::ClearVectors()
     for (Enemy enemy : footEnemies)
     {
         Blip blip = HUD::GET_BLIP_FROM_ENTITY(enemy.ped);
-        
+
         if (blip != NULL)
         {
             HUD::REMOVE_BLIP(&blip);
@@ -112,29 +112,29 @@ int GetKillTime(Ped ped)
 
     switch (lastDamagedBone)
     {
-        case eBone::SKEL_Head:
-            SCREEN::ShowNotification("Headshot: ~g~+5 seconds");
-            return 5000;
-        case eBone::SKEL_Spine_Root:
-        case eBone::SKEL_Spine0:
-        case eBone::SKEL_Spine1:
-        case eBone::SKEL_Spine2:
-        case eBone::SKEL_Spine3:
-            SCREEN::ShowNotification("Torso: ~y~+2.5 seconds");
-            return 2500;
-        case eBone::SKEL_L_UpperArm:
-        case eBone::SKEL_R_UpperArm:
-        case eBone::SKEL_L_Forearm:
-        case eBone::SKEL_R_Forearm:
-        case eBone::SKEL_L_Thigh:
-        case eBone::SKEL_R_Thigh:
-        case eBone::SKEL_L_Calf:
-        case eBone::SKEL_R_Calf:
-            SCREEN::ShowNotification("Limb: ~r~+1.25 seconds");
-            return 1250;
-        default:
-            SCREEN::ShowNotification("Other: ~c~+1 second");
-            return 1000;
+    case eBone::SKEL_Head:
+        SCREEN::ShowNotification("Headshot: ~g~+5 seconds");
+        return 5000;
+    case eBone::SKEL_Spine_Root:
+    case eBone::SKEL_Spine0:
+    case eBone::SKEL_Spine1:
+    case eBone::SKEL_Spine2:
+    case eBone::SKEL_Spine3:
+        SCREEN::ShowNotification("Torso: ~y~+2.5 seconds");
+        return 2500;
+    case eBone::SKEL_L_UpperArm:
+    case eBone::SKEL_R_UpperArm:
+    case eBone::SKEL_L_Forearm:
+    case eBone::SKEL_R_Forearm:
+    case eBone::SKEL_L_Thigh:
+    case eBone::SKEL_R_Thigh:
+    case eBone::SKEL_L_Calf:
+    case eBone::SKEL_R_Calf:
+        SCREEN::ShowNotification("Limb: ~r~+1.25 seconds");
+        return 1250;
+    default:
+        SCREEN::ShowNotification("Other: ~c~+1 second");
+        return 1000;
     }
 }
 
@@ -196,7 +196,7 @@ void RemoveDeadEnemies()
 
                 ENTITY::SET_PED_AS_NO_LONGER_NEEDED(&body.ped);
                 ENEMIES::EnemiesData::kills += 1;
-            } 
+            }
             else
             {
                 deadEnemies.push_back(body);
@@ -259,7 +259,7 @@ void ENEMIES::RemoveUnusedVehicles()
 
 void ProcessSuicidals()
 {
-    for (Enemy &enemy : footEnemies)
+    for (Enemy& enemy : footEnemies)
     {
         if (enemy.enemyType != eEnemyType::Explosive)
         {
@@ -284,11 +284,12 @@ void ProcessSuicidals()
                 enemy.deadCoords = ENTITY::GET_ENTITY_COORDS(enemy.ped, true);
                 enemy.timeOfDeath = MISC::GET_GAME_TIMER();
                 enemy.timer = true;
-            } else
+            }
+            else
             {
                 if (MISC::GET_GAME_TIMER() - enemy.timeOfDeath >= 2000)
                 {
-                    FIRE::ADD_EXPLOSION(enemy.deadCoords.x, enemy.deadCoords.y, enemy.deadCoords.z , eExplosionType::ExplosionTypeStickyBomb, 5.0f, true, false, 2.0f, false);
+                    FIRE::ADD_EXPLOSION(enemy.deadCoords.x, enemy.deadCoords.y, enemy.deadCoords.z, eExplosionType::ExplosionTypeStickyBomb, 5.0f, true, false, 2.0f, false);
                     enemy.exploded = true;
                 }
             }
@@ -319,17 +320,17 @@ std::vector<Hash> GetWeapons(Hash pedModel)
 
     switch (SURVIVAL::SurvivalData::CurrentWave)
     {
-        case 1:
-        case 2:
-        case 3:
-            return SURVIVAL::SpawnerData::weakWeapons;
-        case 4:
-        case 5:
-        case 6:
-        case 7:
-            return SURVIVAL::SpawnerData::medWeapons;
-        default:
-            return SURVIVAL::SpawnerData::strongWeapons;
+    case 1:
+    case 2:
+    case 3:
+        return SURVIVAL::SpawnerData::weakWeapons;
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+        return SURVIVAL::SpawnerData::medWeapons;
+    default:
+        return SURVIVAL::SpawnerData::strongWeapons;
     }
 }
 
@@ -823,7 +824,7 @@ void InitializeZombie(Enemy& enemy, bool fast)
     PED::SET_PED_MONEY(enemy.ped, 0);
 
     PED::SET_PED_ARMOUR(enemy.ped, 5 * SURVIVAL::SurvivalData::CurrentWave);
-   
+
     AUDIO::DISABLE_PED_PAIN_AUDIO(enemy.ped, true);
 
     if (fieryChance)
@@ -885,59 +886,6 @@ void InitializeZombie(Enemy& enemy, bool fast)
     TASK::CLEAR_SEQUENCE_TASK(&sequence);
 }
 
-bool ZombieResourcesLoaded()
-{
-    return STREAMING::HAS_ANIM_DICT_LOADED("anim@scripted@surv@ig2_zombie_spawn@shambler@") &&
-        STREAMING::HAS_ANIM_DICT_LOADED("anim@scripted@surv@ig2_zombie_spawn@runner@") &&
-        STREAMING::HAS_CLIP_SET_LOADED("clipset@anim@ingame@move_m@zombie@core") &&
-        STREAMING::HAS_CLIP_SET_LOADED("clipset@anim@ingame@move_m@zombie@strafe") &&
-        STREAMING::HAS_CLIP_SET_LOADED("clipset@anim@ingame@melee@unarmed@streamed_core_zombie") &&
-        STREAMING::HAS_CLIP_SET_LOADED("clipset@anim@ingame@melee@unarmed@streamed_variations_zombie") &&
-        STREAMING::HAS_CLIP_SET_LOADED("clipset@anim@ingame@melee@unarmed@streamed_taunts_zombie");
-}
-
-void InitializeZombie(Ped ped, bool fast)
-{
-    while (!ZombieResourcesLoaded())
-    {
-        WAIT(50);
-    }
-
-    PED::SET_PED_RELATIONSHIP_GROUP_HASH(ped, Data::enemiesRelGroup);
-    PED::SET_PED_COMBAT_MOVEMENT(ped, 2);
-    PED::SET_PED_MOVEMENT_CLIPSET(ped, "clipset@anim@ingame@move_m@zombie@core", 0.25f);
-    PED::SET_PED_USING_ACTION_MODE(ped, true, -1, "clipset@anim@ingame@move_m@zombie@core");
-    PED::SET_PED_STRAFE_CLIPSET(ped, "clipset@anim@ingame@move_m@zombie@strafe");
-    WEAPON::SET_WEAPON_ANIMATION_OVERRIDE(ped, MISC::GET_HASH_KEY("ZOMBIE"));
-
-    if (fast)
-    {
-        PED::SET_PED_MIN_MOVE_BLEND_RATIO(ped, 1.0f);
-        PED::SET_PED_MAX_MOVE_BLEND_RATIO(ped, 3.0f);
-    }
-    else
-    {
-        PED::SET_PED_MIN_MOVE_BLEND_RATIO(ped, 0.25f);
-        PED::SET_PED_MAX_MOVE_BLEND_RATIO(ped, 0.5f);
-    }
-
-    WEAPON::REMOVE_ALL_PED_WEAPONS(ped, true);
-
-    PED::SET_PED_COMBAT_ATTRIBUTES(ped, 46, true);
-    PED::SET_PED_COMBAT_ATTRIBUTES(ped, 5, true);
-    PED::SET_PED_COMBAT_ATTRIBUTES(ped, 1, false);
-    PED::SET_PED_COMBAT_RANGE(ped, 1);
-    PED::SET_PED_COMBAT_MOVEMENT(ped, 2);
-    PED::SET_PED_CAN_SWITCH_WEAPON(ped, false);
-
-    if (fast) {
-        PED::SET_PED_COMBAT_ABILITY(ped, 2);
-
-    }
-    else {
-        PED::SET_PED_COMBAT_ABILITY(ped, 1);
-    }
-
 void InitializeEnemy(Enemy& enemy)
 {
     Hash pedModel = ENTITY::GET_ENTITY_MODEL(enemy.ped);
@@ -948,13 +896,7 @@ void InitializeEnemy(Enemy& enemy)
         return;
     }
 
-    if (SURVIVAL::SurvivalData::zombies)
-    {
-        InitializeZombie(ped, SURVIVAL::SurvivalData::CurrentWave >= 5);
-        return;
-    }
-
-    if (pedModel == 0xCE2CB751 &&  !jesusSpawned)
+    if (pedModel == 0xCE2CB751 && !jesusSpawned)
     {
         InitializeJesus(enemy.ped);
         return;
@@ -973,23 +915,23 @@ void InitializeEnemy(Enemy& enemy)
 
     switch (pedModel)
     {
-        case 0x585C0B52:
-        case 0x3AE4A33B:
-        case 0x5CDEF405:
-        case 0xEDBC7546:
-        case 0x26F067AD:
-        case 0x7B8B434B:
-        case 0x5E3DA4A4:
-        case 0x15F8700D:
-        case 0x616C97B9:
-        case 0x72C0CAD2:
-        case 0x8D8F1B10:
-            PED::SET_PED_CONFIG_FLAG(enemy.ped, 155, false);
-            PED::SET_PED_CONFIG_FLAG(enemy.ped, 42, true);
-            PED::SET_PED_CONFIG_FLAG(enemy.ped, 301, true);
-            break;
-        default:
-            break;
+    case 0x585C0B52:
+    case 0x3AE4A33B:
+    case 0x5CDEF405:
+    case 0xEDBC7546:
+    case 0x26F067AD:
+    case 0x7B8B434B:
+    case 0x5E3DA4A4:
+    case 0x15F8700D:
+    case 0x616C97B9:
+    case 0x72C0CAD2:
+    case 0x8D8F1B10:
+        PED::SET_PED_CONFIG_FLAG(enemy.ped, 155, false);
+        PED::SET_PED_CONFIG_FLAG(enemy.ped, 42, true);
+        PED::SET_PED_CONFIG_FLAG(enemy.ped, 301, true);
+        break;
+    default:
+        break;
     }
 
     if (pedModel == 0x64611296)
@@ -1028,17 +970,17 @@ void InitializeEnemyInAircraft(Ped ped, bool passenger)
 
     switch (pedModel)
     {
-        case 0x5E3DA4A4:
-        case 0x15F8700D:
-        case 0x616C97B9:
-        case 0x72C0CAD2:
-        case 0x8D8F1B10:
-            PED::SET_PED_CONFIG_FLAG(ped, 155, false);
-            PED::SET_PED_CONFIG_FLAG(ped, 42, true);
-            PED::SET_PED_CONFIG_FLAG(ped, 301, true);
-            break;
-        default:
-            break;
+    case 0x5E3DA4A4:
+    case 0x15F8700D:
+    case 0x616C97B9:
+    case 0x72C0CAD2:
+    case 0x8D8F1B10:
+        PED::SET_PED_CONFIG_FLAG(ped, 155, false);
+        PED::SET_PED_CONFIG_FLAG(ped, 42, true);
+        PED::SET_PED_CONFIG_FLAG(ped, 301, true);
+        break;
+    default:
+        break;
     }
 
     if (pedModel == 0x64611296)
@@ -1082,17 +1024,17 @@ void InitializeEnemyInVehicle(Ped ped, bool passenger)
 
     switch (pedModel)
     {
-        case 0x5E3DA4A4:
-        case 0x15F8700D:
-        case 0x616C97B9:
-        case 0x72C0CAD2:
-        case 0x8D8F1B10:
-            PED::SET_PED_CONFIG_FLAG(ped, 155, false);
-            PED::SET_PED_CONFIG_FLAG(ped, 42, true);
-            PED::SET_PED_CONFIG_FLAG(ped, 301, true);
-            break;
-        default:
-            break;
+    case 0x5E3DA4A4:
+    case 0x15F8700D:
+    case 0x616C97B9:
+    case 0x72C0CAD2:
+    case 0x8D8F1B10:
+        PED::SET_PED_CONFIG_FLAG(ped, 155, false);
+        PED::SET_PED_CONFIG_FLAG(ped, 42, true);
+        PED::SET_PED_CONFIG_FLAG(ped, 301, true);
+        break;
+    default:
+        break;
     }
 
     if (pedModel == 0x64611296)
@@ -1289,7 +1231,7 @@ bool ShouldSpawnJuggernaut()
             lastTankCheck = currentTime;
         }
 
-        return SURVIVAL::SurvivalData::CurrentWave >= 3 && !tankLimitReached && ENEMIES::EnemiesData::currentWaveSize >= SURVIVAL::SurvivalData::MaxWaveSize / 2 && timeLimit ;
+        return SURVIVAL::SurvivalData::CurrentWave >= 3 && !tankLimitReached && ENEMIES::EnemiesData::currentWaveSize >= SURVIVAL::SurvivalData::MaxWaveSize / 2 && timeLimit;
     }
 
     bool tankLimitReached = EnemyCountByType(eEnemyType::Juggernaut) >= 1;
@@ -1540,25 +1482,25 @@ void ENEMIES::Process()
         ProcessJesus();
 
         MUSIC::Process(EnemiesData::currentWaveSize, SURVIVAL::SurvivalData::MaxWaveSize);
-        
+
         if (!SURVIVAL::SurvivalData::hardcore)
         {
             switch (SURVIVAL::SurvivalData::CurrentWave)
             {
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                    EnemiesData::limitReached = footEnemies.size() >= 12;
-                    break;
-                case 6:
-                case 7:
-                    EnemiesData::limitReached = footEnemies.size() >= 11;
-                    break;
-                default:
-                    EnemiesData::limitReached = footEnemies.size() >= 10;
-                    break;
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+                EnemiesData::limitReached = footEnemies.size() >= 12;
+                break;
+            case 6:
+            case 7:
+                EnemiesData::limitReached = footEnemies.size() >= 11;
+                break;
+            default:
+                EnemiesData::limitReached = footEnemies.size() >= 10;
+                break;
             }
         }
 

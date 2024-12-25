@@ -244,28 +244,74 @@ void UnloadNY()
     STREAMING::SET_MAPDATACULLBOX_ENABLED("prologue", false);
 }
 
+void LoadBunker()
+{
+    TPPoint v = teleportPoints.at(eMarkers::BunkerExit);
+    Interior i = INTERIOR::GET_INTERIOR_AT_COORDS(v.x, v.y, v.z);
+
+    if (!INTERIOR::IS_VALID_INTERIOR(i))
+    {
+        SCREEN::ShowNotification("INVALID BUNKER INTERIOR");
+        return;
+    }
+
+    if (INTERIOR::IS_INTERIOR_DISABLED(i))
+    {
+        INTERIOR::DISABLE_INTERIOR(i, false);
+    }
+
+    if (INTERIOR::IS_INTERIOR_CAPPED(i))
+    {
+        INTERIOR::CAP_INTERIOR(i, false);
+    }
+
+    INTERIOR::PIN_INTERIOR_IN_MEMORY(i);
+
+    INTERIOR::DEACTIVATE_INTERIOR_ENTITY_SET(i, "bunker_style_a");
+    INTERIOR::DEACTIVATE_INTERIOR_ENTITY_SET(i, "bunker_style_b");
+    INTERIOR::DEACTIVATE_INTERIOR_ENTITY_SET(i, "standard_bunker_set");
+
+    INTERIOR::ACTIVATE_INTERIOR_ENTITY_SET(i, "bunker_style_c");
+    INTERIOR::ACTIVATE_INTERIOR_ENTITY_SET(i, "upgrade_bunker_set");
+    INTERIOR::ACTIVATE_INTERIOR_ENTITY_SET(i, "upgrade_bunker_set_more");
+    INTERIOR::ACTIVATE_INTERIOR_ENTITY_SET(i, "security_upgrade");
+    INTERIOR::ACTIVATE_INTERIOR_ENTITY_SET(i, "Office_Upgrade_set");
+    INTERIOR::ACTIVATE_INTERIOR_ENTITY_SET(i, "gun_range_lights");
+    INTERIOR::ACTIVATE_INTERIOR_ENTITY_SET(i, "gun_schematic_set");
+    INTERIOR::ACTIVATE_INTERIOR_ENTITY_SET(i, "gun_locker_upgrade");
+
+    INTERIOR::REFRESH_INTERIOR(i);
+
+    WAIT(1200);
+}
+
+void UnloadBunker()
+{
+    TPPoint v = teleportPoints.at(eMarkers::BunkerExit);
+    Interior i = INTERIOR::GET_INTERIOR_AT_COORDS(v.x, v.y, v.z);
+
+    INTERIOR::DEACTIVATE_INTERIOR_ENTITY_SET(i, "bunker_style_c");
+    INTERIOR::DEACTIVATE_INTERIOR_ENTITY_SET(i, "upgrade_bunker_set");
+    INTERIOR::DEACTIVATE_INTERIOR_ENTITY_SET(i, "upgrade_bunker_set_more");
+    INTERIOR::DEACTIVATE_INTERIOR_ENTITY_SET(i, "security_upgrade");
+    INTERIOR::DEACTIVATE_INTERIOR_ENTITY_SET(i, "Office_Upgrade_set");
+    INTERIOR::DEACTIVATE_INTERIOR_ENTITY_SET(i, "gun_range_lights");
+    INTERIOR::DEACTIVATE_INTERIOR_ENTITY_SET(i, "gun_schematic_set");
+    INTERIOR::DEACTIVATE_INTERIOR_ENTITY_SET(i, "gun_locker_upgrade");
+
+    INTERIOR::UNPIN_INTERIOR(i);
+}
+
 void toggleInterior(size_t index) {
     switch (index) {
         case eMarkers::BunkerEntrance: {
-            TPPoint v = teleportPoints.at(eMarkers::BunkerExit);
-            Interior i = INTERIOR::GET_INTERIOR_AT_COORDS(v.x, v.y, v.z);
-            INTERIOR::DEACTIVATE_INTERIOR_ENTITY_SET(i, "bunker_style_a");
-            INTERIOR::DEACTIVATE_INTERIOR_ENTITY_SET(i, "bunker_style_b");
-            INTERIOR::ACTIVATE_INTERIOR_ENTITY_SET(i, "bunker_style_c");
-            INTERIOR::DEACTIVATE_INTERIOR_ENTITY_SET(i, "standard_bunker_set");
-            INTERIOR::ACTIVATE_INTERIOR_ENTITY_SET(i, "upgrade_bunker_set");
-            INTERIOR::ACTIVATE_INTERIOR_ENTITY_SET(i, "upgrade_bunker_set_more");
-            INTERIOR::ACTIVATE_INTERIOR_ENTITY_SET(i, "security_upgrade");
-            INTERIOR::ACTIVATE_INTERIOR_ENTITY_SET(i, "Office_Upgrade_set");
-            INTERIOR::ACTIVATE_INTERIOR_ENTITY_SET(i, "gun_range_lights");
-            INTERIOR::ACTIVATE_INTERIOR_ENTITY_SET(i, "gun_schematic_set");
-            INTERIOR::ACTIVATE_INTERIOR_ENTITY_SET(i, "gun_locker_upgrade");
-            INTERIOR::REFRESH_INTERIOR(i);
             AUDIO::PLAY_SOUND_FRONTEND(-1, "Door_Open_Limit", "DLC_GR_Bunker_Door_Sounds", true);
+            LoadBunker();
             break;
         }
         case eMarkers::BunkerExit: {
             AUDIO::PLAY_SOUND_FRONTEND(-1, "Enter_Car_Ramp_Deploy", "DLC_GR_MOC_Enter_Exit_Sounds", true);
+            UnloadBunker();
             break;
         }
         case eMarkers::LabEntrance: {
@@ -469,7 +515,18 @@ int main() {
     ReadConfig();
 
     if (tpPointsEnabled)
+    {
         createTPBlips();
+    }
+
+    DLC::ON_ENTER_MP();
+    MISC::SET_INSTANCE_PRIORITY_MODE(1);
+
+    //Load bunker hatch for the bunker survival
+    if (!STREAMING::IS_IPL_ACTIVE("gr_case6_bunkerclosed"))
+    {
+        STREAMING::REQUEST_IPL("gr_case6_bunkerclosed");
+    }
 
     while (true) {
         playerId = PLAYER::PLAYER_PED_ID();
@@ -520,4 +577,13 @@ void OnAbort() {
     }
 
     UnloadNY();
+    UnloadBunker();
+
+    if (STREAMING::IS_IPL_ACTIVE("gr_case6_bunkerclosed"))
+    {
+        STREAMING::REMOVE_IPL("gr_case6_bunkerclosed");
+    }
+
+    DLC::ON_ENTER_SP();
+    MISC::SET_INSTANCE_PRIORITY_MODE(0);
 }
