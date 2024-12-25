@@ -488,15 +488,17 @@ void ReadConfig() {
 }
 
 void createTPBlips() {
-    STREAMING::REQUEST_IPL("gr_case6_bunkerclosed");
-    STREAMING::REQUEST_IPL("gr_grdlc_interior_placement_interior_0_grdlc_int_01_milo_");
-    STREAMING::REQUEST_IPL("gr_grdlc_interior_placement_interior_1_grdlc_int_02_milo_");
     TPPoint coords = teleportPoints.at(eMarkers::BunkerEntrance);
     entranceBlips.push_back(BLIPS::Create(coords.x, coords.y, coords.z, 557, eBlipColor::BlipColorWhite, "Bunker"));
+
     coords = teleportPoints.at(eMarkers::LabEntrance);
     entranceBlips.push_back(BLIPS::Create(coords.x, coords.y, coords.z, 499, eBlipColor::BlipColorWhite, "Secret Lab"));
+
     coords = teleportPoints.at(eMarkers::CemeteryEntrance);
     entranceBlips.push_back(BLIPS::Create(coords.x, coords.y, coords.z, 465, eBlipColor::BlipColorWhite, "Cemetery"));
+
+    coords = teleportPoints.at(eMarkers::CayoPericoEntrance);
+    entranceBlips.push_back(BLIPS::Create(coords.x, coords.y, coords.z, 836, eBlipColor::BlipColorWhite, "Cayo Perico"));
 }
 
 const char* getHelpText(size_t index) {
