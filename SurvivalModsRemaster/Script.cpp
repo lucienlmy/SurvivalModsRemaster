@@ -356,7 +356,7 @@ std::array<const char*, 319> CAYO_PERICO_IPL = {
     "h4_mph4_island_placement"
 };
 
-Vector3 CayoPericoCoords = Vector3(5031.428f, -5150.907f, 0);
+Vector3 CayoPericoCoords = Vector3(4858.0, -5171.0, 2.0);
 
 struct TPPoint {
     float x;
@@ -662,18 +662,7 @@ void LoadCayoPerico()
         STREAMING::REQUEST_IPL(ipl);
     }
 
-    bool cayoPericoLoaded = false;
-
-    do {
-        cayoPericoLoaded = true;
-
-        for (const char*& ipl : CAYO_PERICO_IPL)
-        {
-            if (!STREAMING::IS_IPL_ACTIVE(ipl)) {
-                cayoPericoLoaded = false;
-            }
-        }
-    } while (!cayoPericoLoaded);
+    WAIT(1200);
 }
 
 void UnloadCayoPerico()
@@ -925,7 +914,7 @@ int main() {
         Vector3 playerCoords = ENTITY::GET_ENTITY_COORDS(playerId, true);
 
         //load cayo perico when the player is in range
-        if (MISC::GET_DISTANCE_BETWEEN_COORDS(playerCoords.x, playerCoords.y, 0, CayoPericoCoords.x, CayoPericoCoords.y, 0, false) < 2000)
+        if (SYSTEM::VDIST2(playerCoords.x, playerCoords.y, playerCoords.z, CayoPericoCoords.x, CayoPericoCoords.y, CayoPericoCoords.z) < 2000)
         {
             if (!islandLoaded) {
                 islandLoaded = true;
@@ -937,6 +926,7 @@ int main() {
                 AUDIO::SET_AMBIENT_ZONE_LIST_STATE_PERSISTENT("AZL_DLC_Hei4_Island_Disabled_Zones", false, true);
             }
 
+            HUD::SET_USE_ISLAND_MAP(true);
             HUD::SET_RADAR_AS_INTERIOR_THIS_FRAME(MISC::GET_HASH_KEY("h4_fake_islandx"), 4700.0f, -5145.0f, 0, 0);
         }
         else if (islandLoaded)
@@ -947,6 +937,7 @@ int main() {
             PATHFIND::SET_ALLOW_STREAM_HEIST_ISLAND_NODES(0);
             AUDIO::SET_AMBIENT_ZONE_LIST_STATE_PERSISTENT("AZL_DLC_Hei4_Island_Zones", false, false);
             AUDIO::SET_AMBIENT_ZONE_LIST_STATE_PERSISTENT("AZL_DLC_Hei4_Island_Disabled_Zones", true, false);
+            HUD::SET_USE_ISLAND_MAP(false);
         }
 
         IsPlayerInMissionStartRange();
