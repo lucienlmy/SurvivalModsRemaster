@@ -2,6 +2,8 @@
 #include "Script.hpp"
 #include "json.hpp"
 
+#include <array>
+
 std::vector<SurvivalAllies> TriggerPedsData::allies;
 std::vector<std::string> TriggerPedsData::names;
 std::vector<std::string> TriggerPedsData::models;
@@ -30,6 +32,331 @@ int Data::TPIndex;
 bool tpPointsEnabled;
 int playerId;
 SurvivalModes currentMode = SurvivalModes::TenWaves;
+bool islandLoaded = false;
+
+std::array<const char*, 319> CAYO_PERICO_IPL = {
+    "h4_mph4_terrain_01_grass_0",
+    "h4_mph4_terrain_01_grass_1",
+    "h4_mph4_terrain_02_grass_0",
+    "h4_mph4_terrain_02_grass_1",
+    "h4_mph4_terrain_02_grass_2",
+    "h4_mph4_terrain_02_grass_3",
+    "h4_mph4_terrain_04_grass_0",
+    "h4_mph4_terrain_04_grass_1",
+    "h4_mph4_terrain_05_grass_0",
+    "h4_mph4_terrain_06_grass_0",
+    "h4_islandx_terrain_01",
+    "h4_islandx_terrain_01_lod",
+    "h4_islandx_terrain_01_slod",
+    "h4_islandx_terrain_02",
+    "h4_islandx_terrain_02_lod",
+    "h4_islandx_terrain_02_slod",
+    "h4_islandx_terrain_03",
+    "h4_islandx_terrain_03_lod",
+    "h4_islandx_terrain_04",
+    "h4_islandx_terrain_04_lod",
+    "h4_islandx_terrain_04_slod",
+    "h4_islandx_terrain_05",
+    "h4_islandx_terrain_05_lod",
+    "h4_islandx_terrain_05_slod",
+    "h4_islandx_terrain_06",
+    "h4_islandx_terrain_06_lod",
+    "h4_islandx_terrain_06_slod",
+    "h4_islandx_terrain_props_05_a",
+    "h4_islandx_terrain_props_05_a_lod",
+    "h4_islandx_terrain_props_05_b",
+    "h4_islandx_terrain_props_05_b_lod",
+    "h4_islandx_terrain_props_05_c",
+    "h4_islandx_terrain_props_05_c_lod",
+    "h4_islandx_terrain_props_05_d",
+    "h4_islandx_terrain_props_05_d_lod",
+    "h4_islandx_terrain_props_05_d_slod",
+    "h4_islandx_terrain_props_05_e",
+    "h4_islandx_terrain_props_05_e_lod",
+    "h4_islandx_terrain_props_05_e_slod",
+    "h4_islandx_terrain_props_05_f",
+    "h4_islandx_terrain_props_05_f_lod",
+    "h4_islandx_terrain_props_05_f_slod",
+    "h4_islandx_terrain_props_06_a",
+    "h4_islandx_terrain_props_06_a_lod",
+    "h4_islandx_terrain_props_06_a_slod",
+    "h4_islandx_terrain_props_06_b",
+    "h4_islandx_terrain_props_06_b_lod",
+    "h4_islandx_terrain_props_06_b_slod",
+    "h4_islandx_terrain_props_06_c",
+    "h4_islandx_terrain_props_06_c_lod",
+    "h4_islandx_terrain_props_06_c_slod",
+    "h4_mph4_terrain_01",
+    "h4_mph4_terrain_01_long_0",
+    "h4_mph4_terrain_02",
+    "h4_mph4_terrain_03",
+    "h4_mph4_terrain_04",
+    "h4_mph4_terrain_05",
+    "h4_mph4_terrain_06",
+    "h4_mph4_terrain_06_strm_0",
+    "h4_mph4_terrain_lod",
+    "h4_mph4_terrain_occ_00",
+    "h4_mph4_terrain_occ_01",
+    "h4_mph4_terrain_occ_02",
+    "h4_mph4_terrain_occ_03",
+    "h4_mph4_terrain_occ_04",
+    "h4_mph4_terrain_occ_05",
+    "h4_mph4_terrain_occ_06",
+    "h4_mph4_terrain_occ_07",
+    "h4_mph4_terrain_occ_08",
+    "h4_mph4_terrain_occ_09",
+    "h4_boatblockers",
+    "h4_islandx",
+    "h4_islandx_disc_strandedshark",
+    "h4_islandx_disc_strandedshark_lod",
+    "h4_islandx_disc_strandedwhale",
+    "h4_islandx_disc_strandedwhale_lod",
+    "h4_islandx_props",
+    "h4_islandx_props_lod",
+    "h4_islandx_sea_mines",
+    "h4_mph4_island",
+    "h4_mph4_island_long_0",
+    "h4_mph4_island_strm_0",
+    "h4_aa_guns",
+    "h4_aa_guns_lod",
+    "h4_beach",
+    "h4_beach_bar_props",
+    "h4_beach_lod",
+    "h4_beach_party",
+    "h4_beach_party_lod",
+    "h4_beach_props",
+    "h4_beach_props_lod",
+    "h4_beach_props_party",
+    "h4_beach_props_slod",
+    "h4_beach_slod",
+    "h4_islandairstrip",
+    "h4_islandairstrip_doorsclosed",
+    "h4_islandairstrip_doorsclosed_lod",
+    "h4_islandairstrip_doorsopen",
+    "h4_islandairstrip_doorsopen_lod",
+    "h4_islandairstrip_hangar_props",
+    "h4_islandairstrip_hangar_props_lod",
+    "h4_islandairstrip_hangar_props_slod",
+    "h4_islandairstrip_lod",
+    "h4_islandairstrip_props",
+    "h4_islandairstrip_propsb",
+    "h4_islandairstrip_propsb_lod",
+    "h4_islandairstrip_propsb_slod",
+    "h4_islandairstrip_props_lod",
+    "h4_islandairstrip_props_slod",
+    "h4_islandairstrip_slod",
+    "h4_islandxcanal_props",
+    "h4_islandxcanal_props_lod",
+    "h4_islandxcanal_props_slod",
+    "h4_islandxdock",
+    "h4_islandxdock_lod",
+    "h4_islandxdock_props",
+    "h4_islandxdock_props_2",
+    "h4_islandxdock_props_2_lod",
+    "h4_islandxdock_props_2_slod",
+    "h4_islandxdock_props_lod",
+    "h4_islandxdock_props_slod",
+    "h4_islandxdock_slod",
+    "h4_islandxdock_water_hatch",
+    "h4_islandxtower",
+    "h4_islandxtower_lod",
+    "h4_islandxtower_slod",
+    "h4_islandxtower_veg",
+    "h4_islandxtower_veg_lod",
+    "h4_islandxtower_veg_slod",
+    "h4_islandx_barrack_hatch",
+    "h4_islandx_barrack_props",
+    "h4_islandx_barrack_props_lod",
+    "h4_islandx_barrack_props_slod",
+    "h4_islandx_checkpoint",
+    "h4_islandx_checkpoint_lod",
+    "h4_islandx_checkpoint_props",
+    "h4_islandx_checkpoint_props_lod",
+    "h4_islandx_checkpoint_props_slod",
+    "h4_islandx_maindock",
+    "h4_islandx_maindock_lod",
+    "h4_islandx_maindock_props",
+    "h4_islandx_maindock_props_2",
+    "h4_islandx_maindock_props_2_lod",
+    "h4_islandx_maindock_props_2_slod",
+    "h4_islandx_maindock_props_lod",
+    "h4_islandx_maindock_props_slod",
+    "h4_islandx_maindock_slod",
+    "h4_islandx_mansion",
+    "h4_islandx_mansion_b",
+    "h4_islandx_mansion_b_lod",
+    "h4_islandx_mansion_b_side_fence",
+    "h4_islandx_mansion_b_slod",
+    "h4_islandx_mansion_entrance_fence",
+    "h4_islandx_mansion_guardfence",
+    "h4_islandx_mansion_lights",
+    "h4_islandx_mansion_lockup_01",
+    "h4_islandx_mansion_lockup_01_lod",
+    "h4_islandx_mansion_lockup_02",
+    "h4_islandx_mansion_lockup_02_lod",
+    "h4_islandx_mansion_lockup_03",
+    "h4_islandx_mansion_lockup_03_lod",
+    "h4_islandx_mansion_lod",
+    "h4_islandx_mansion_office",
+    "h4_islandx_mansion_office_lod",
+    "h4_islandx_mansion_props",
+    "h4_islandx_mansion_props_lod",
+    "h4_islandx_mansion_props_slod",
+    "h4_islandx_mansion_slod",
+    "h4_islandx_mansion_vault",
+    "h4_islandx_mansion_vault_lod",
+    "h4_island_padlock_props",
+    "h4_mansion_gate_broken",
+    "h4_mansion_remains_cage",
+    "h4_mph4_airstrip",
+    "h4_mph4_airstrip_interior_0_airstrip_hanger",
+    "h4_mph4_beach",
+    "h4_mph4_dock",
+    "h4_mph4_island_lod",
+    "h4_mph4_island_ne_placement",
+    "h4_mph4_island_nw_placement",
+    "h4_mph4_island_se_placement",
+    "h4_mph4_island_sw_placement",
+    "h4_mph4_mansion",
+    "h4_mph4_mansion_b",
+    "h4_mph4_mansion_b_strm_0",
+    "h4_mph4_mansion_strm_0",
+    "h4_mph4_wtowers",
+    "h4_ne_ipl_00",
+    "h4_ne_ipl_00_lod",
+    "h4_ne_ipl_00_slod",
+    "h4_ne_ipl_01",
+    "h4_ne_ipl_01_lod",
+    "h4_ne_ipl_01_slod",
+    "h4_ne_ipl_02",
+    "h4_ne_ipl_02_lod",
+    "h4_ne_ipl_02_slod",
+    "h4_ne_ipl_03",
+    "h4_ne_ipl_03_lod",
+    "h4_ne_ipl_03_slod",
+    "h4_ne_ipl_04",
+    "h4_ne_ipl_04_lod",
+    "h4_ne_ipl_04_slod",
+    "h4_ne_ipl_05",
+    "h4_ne_ipl_05_lod",
+    "h4_ne_ipl_05_slod",
+    "h4_ne_ipl_06",
+    "h4_ne_ipl_06_lod",
+    "h4_ne_ipl_06_slod",
+    "h4_ne_ipl_07",
+    "h4_ne_ipl_07_lod",
+    "h4_ne_ipl_07_slod",
+    "h4_ne_ipl_08",
+    "h4_ne_ipl_08_lod",
+    "h4_ne_ipl_08_slod",
+    "h4_ne_ipl_09",
+    "h4_ne_ipl_09_lod",
+    "h4_ne_ipl_09_slod",
+    "h4_nw_ipl_00",
+    "h4_nw_ipl_00_lod",
+    "h4_nw_ipl_00_slod",
+    "h4_nw_ipl_01",
+    "h4_nw_ipl_01_lod",
+    "h4_nw_ipl_01_slod",
+    "h4_nw_ipl_02",
+    "h4_nw_ipl_02_lod",
+    "h4_nw_ipl_02_slod",
+    "h4_nw_ipl_03",
+    "h4_nw_ipl_03_lod",
+    "h4_nw_ipl_03_slod",
+    "h4_nw_ipl_04",
+    "h4_nw_ipl_04_lod",
+    "h4_nw_ipl_04_slod",
+    "h4_nw_ipl_05",
+    "h4_nw_ipl_05_lod",
+    "h4_nw_ipl_05_slod",
+    "h4_nw_ipl_06",
+    "h4_nw_ipl_06_lod",
+    "h4_nw_ipl_06_slod",
+    "h4_nw_ipl_07",
+    "h4_nw_ipl_07_lod",
+    "h4_nw_ipl_07_slod",
+    "h4_nw_ipl_08",
+    "h4_nw_ipl_08_lod",
+    "h4_nw_ipl_08_slod",
+    "h4_nw_ipl_09",
+    "h4_nw_ipl_09_lod",
+    "h4_nw_ipl_09_slod",
+    "h4_se_ipl_00",
+    "h4_se_ipl_00_lod",
+    "h4_se_ipl_00_slod",
+    "h4_se_ipl_01",
+    "h4_se_ipl_01_lod",
+    "h4_se_ipl_01_slod",
+    "h4_se_ipl_02",
+    "h4_se_ipl_02_lod",
+    "h4_se_ipl_02_slod",
+    "h4_se_ipl_03",
+    "h4_se_ipl_03_lod",
+    "h4_se_ipl_03_slod",
+    "h4_se_ipl_04",
+    "h4_se_ipl_04_lod",
+    "h4_se_ipl_04_slod",
+    "h4_se_ipl_05",
+    "h4_se_ipl_05_lod",
+    "h4_se_ipl_05_slod",
+    "h4_se_ipl_06",
+    "h4_se_ipl_06_lod",
+    "h4_se_ipl_06_slod",
+    "h4_se_ipl_07",
+    "h4_se_ipl_07_lod",
+    "h4_se_ipl_07_slod",
+    "h4_se_ipl_08",
+    "h4_se_ipl_08_lod",
+    "h4_se_ipl_08_slod",
+    "h4_se_ipl_09",
+    "h4_se_ipl_09_lod",
+    "h4_se_ipl_09_slod",
+    "h4_sw_ipl_00",
+    "h4_sw_ipl_00_lod",
+    "h4_sw_ipl_00_slod",
+    "h4_sw_ipl_01",
+    "h4_sw_ipl_01_lod",
+    "h4_sw_ipl_01_slod",
+    "h4_sw_ipl_02",
+    "h4_sw_ipl_02_lod",
+    "h4_sw_ipl_02_slod",
+    "h4_sw_ipl_03",
+    "h4_sw_ipl_03_lod",
+    "h4_sw_ipl_03_slod",
+    "h4_sw_ipl_04",
+    "h4_sw_ipl_04_lod",
+    "h4_sw_ipl_04_slod",
+    "h4_sw_ipl_05",
+    "h4_sw_ipl_05_lod",
+    "h4_sw_ipl_05_slod",
+    "h4_sw_ipl_06",
+    "h4_sw_ipl_06_lod",
+    "h4_sw_ipl_06_slod",
+    "h4_sw_ipl_07",
+    "h4_sw_ipl_07_lod",
+    "h4_sw_ipl_07_slod",
+    "h4_sw_ipl_08",
+    "h4_sw_ipl_08_lod",
+    "h4_sw_ipl_08_slod",
+    "h4_sw_ipl_09",
+    "h4_sw_ipl_09_lod",
+    "h4_sw_ipl_09_slod",
+    "h4_underwater_gate_closed",
+    "h4_islandx_placement_01",
+    "h4_islandx_placement_02",
+    "h4_islandx_placement_03",
+    "h4_islandx_placement_04",
+    "h4_islandx_placement_05",
+    "h4_islandx_placement_06",
+    "h4_islandx_placement_07",
+    "h4_islandx_placement_08",
+    "h4_islandx_placement_09",
+    "h4_islandx_placement_10",
+    "h4_mph4_island_placement"
+};
+
+Vector3 CayoPericoCoords = Vector3(5031.428f, -5150.907f, 0);
 
 struct TPPoint {
     float x;
@@ -49,7 +376,9 @@ enum eMarkers {
     LabEntrance,
     LabExit,
     CemeteryEntrance,
-    CemeteryExit
+    CemeteryExit,
+    CayoPericoEntrance,
+    CayoPericoExit
 };
 
 static std::vector<TPPoint> teleportPoints = std::vector<TPPoint>{
@@ -58,7 +387,9 @@ static std::vector<TPPoint> teleportPoints = std::vector<TPPoint>{
         TPPoint(456.766663f, 5571.864f, 780.1841f),
         TPPoint(244.57f, 6163.39f, -160.42f),
         TPPoint(-1729.10, -193.10, 58.52),
-        TPPoint(3224.75, -4702.88, 112.74)
+        TPPoint(3224.75, -4702.88, 112.74),
+        TPPoint(-932.5, -1474.9, 1),
+        TPPoint(4888.059, -5175.88, 2.61)
 };
 
 static std::vector<Blip> entranceBlips = std::vector<Blip>();
@@ -290,6 +621,12 @@ void UnloadBunker()
     TPPoint v = teleportPoints.at(eMarkers::BunkerExit);
     Interior i = INTERIOR::GET_INTERIOR_AT_COORDS(v.x, v.y, v.z);
 
+    if (!INTERIOR::IS_VALID_INTERIOR(i))
+    {
+        SCREEN::ShowNotification("INVALID BUNKER INTERIOR");
+        return;
+    }
+
     INTERIOR::DEACTIVATE_INTERIOR_ENTITY_SET(i, "bunker_style_c");
     INTERIOR::DEACTIVATE_INTERIOR_ENTITY_SET(i, "upgrade_bunker_set");
     INTERIOR::DEACTIVATE_INTERIOR_ENTITY_SET(i, "upgrade_bunker_set_more");
@@ -299,7 +636,46 @@ void UnloadBunker()
     INTERIOR::DEACTIVATE_INTERIOR_ENTITY_SET(i, "gun_schematic_set");
     INTERIOR::DEACTIVATE_INTERIOR_ENTITY_SET(i, "gun_locker_upgrade");
 
+    if (!INTERIOR::IS_INTERIOR_DISABLED(i))
+    {
+        INTERIOR::DISABLE_INTERIOR(i, true);
+    }
+
+    if (!INTERIOR::IS_INTERIOR_CAPPED(i))
+    {
+        INTERIOR::CAP_INTERIOR(i, true);
+    }
+
     INTERIOR::UNPIN_INTERIOR(i);
+}
+
+void LoadCayoPerico()
+{
+    for (const char*& ipl : CAYO_PERICO_IPL)
+    {
+        STREAMING::REQUEST_IPL(ipl);
+    }
+
+    bool cayoPericoLoaded = false;
+
+    do {
+        cayoPericoLoaded = true;
+
+        for (const char*& ipl : CAYO_PERICO_IPL)
+        {
+            if (!STREAMING::IS_IPL_ACTIVE(ipl)) {
+                cayoPericoLoaded = false;
+            }
+        }
+    } while (!cayoPericoLoaded);
+}
+
+void UnloadCayoPerico()
+{
+    for (const char*& ipl : CAYO_PERICO_IPL)
+    {
+        STREAMING::REMOVE_IPL(ipl);
+    }
 }
 
 void toggleInterior(size_t index) {
@@ -336,6 +712,16 @@ void toggleInterior(size_t index) {
         case eMarkers::CemeteryExit:
         {
             UnloadNY();
+            break;
+        }
+        case eMarkers::CayoPericoEntrance:
+        {
+            LoadCayoPerico();
+            break;
+        }
+        case eMarkers::CayoPericoExit:
+        {
+            UnloadCayoPerico();
             break;
         }
         default:
@@ -530,6 +916,33 @@ int main() {
 
     while (true) {
         playerId = PLAYER::PLAYER_PED_ID();
+        Vector3 playerCoords = ENTITY::GET_ENTITY_COORDS(playerId, true);
+
+        //load cayo perico when the player is in range
+        if (MISC::GET_DISTANCE_BETWEEN_COORDS(playerCoords.x, playerCoords.y, 0, CayoPericoCoords.x, CayoPericoCoords.y, 0, false) < 2000)
+        {
+            if (!islandLoaded) {
+                islandLoaded = true;
+                WATER::SET_DEEP_OCEAN_SCALER(0);
+                TASK::SET_SCENARIO_GROUP_ENABLED("Heist_Island_Peds", true);
+                STREAMING::SET_ISLAND_ENABLED("HeistIsland", true);
+                PATHFIND::SET_ALLOW_STREAM_HEIST_ISLAND_NODES(1);
+                AUDIO::SET_AMBIENT_ZONE_LIST_STATE_PERSISTENT("AZL_DLC_Hei4_Island_Zones", true, true);
+                AUDIO::SET_AMBIENT_ZONE_LIST_STATE_PERSISTENT("AZL_DLC_Hei4_Island_Disabled_Zones", false, true);
+            }
+
+            HUD::SET_RADAR_AS_INTERIOR_THIS_FRAME(MISC::GET_HASH_KEY("h4_fake_islandx"), 4700.0f, -5145.0f, 0, 0);
+        }
+        else if (islandLoaded)
+        {
+            islandLoaded = false;
+            TASK::SET_SCENARIO_GROUP_ENABLED("Heist_Island_Peds", false);
+            STREAMING::SET_ISLAND_ENABLED("HeistIsland", false);
+            PATHFIND::SET_ALLOW_STREAM_HEIST_ISLAND_NODES(0);
+            AUDIO::SET_AMBIENT_ZONE_LIST_STATE_PERSISTENT("AZL_DLC_Hei4_Island_Zones", false, false);
+            AUDIO::SET_AMBIENT_ZONE_LIST_STATE_PERSISTENT("AZL_DLC_Hei4_Island_Disabled_Zones", true, false);
+        }
+
         IsPlayerInMissionStartRange();
         ProcessTriggerPeds();
 
@@ -543,7 +956,9 @@ int main() {
             }
         }
         else
+        {
             processMarkers();
+        }
 
         ControlsWatch();
         WAIT(0);
@@ -578,6 +993,7 @@ void OnAbort() {
 
     UnloadNY();
     UnloadBunker();
+    UnloadCayoPerico();
 
     if (STREAMING::IS_IPL_ACTIVE("gr_case6_bunkerclosed"))
     {

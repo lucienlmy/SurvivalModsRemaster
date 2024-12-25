@@ -3968,6 +3968,10 @@ namespace DECORATOR
 
 namespace DLC
 {
+  static void CAYO_PERICO_LOAD_MAYBE()
+  {
+      invoke<int>(0x888C3502DBBEEF5);
+  }
   static BOOL ARE_ANY_CCS_PENDING()
   {
     return invoke<BOOL>(0x241FCA5B1AA14F75);

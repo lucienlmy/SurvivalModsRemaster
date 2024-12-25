@@ -91,5 +91,6 @@ struct TriggerPedsData
 void LoadNY();
 void UnloadNY();
 void UnloadBunker();
+void UnloadCayoPerico();
 void ScriptMain();
 void OnAbort();

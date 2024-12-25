@@ -328,6 +328,7 @@ void SURVIVAL::QuitSurvival(bool playerDied)
 		GiveReward(true);
 		UnloadNY();
 		UnloadBunker();
+		UnloadCayoPerico();
 	}
 	else
 	{
