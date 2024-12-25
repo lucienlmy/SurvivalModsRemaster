@@ -515,6 +515,10 @@ const char* getHelpText(size_t index) {
             return "Press ~INPUT_CONTEXT~ to investigate.";
         case eMarkers::CemeteryExit:
             return "Press ~INPUT_CONTEXT~ to leave.";
+        case eMarkers::CayoPericoEntrance:
+            return "Press ~INPUT_CONTEXT~ to go to Cayo Perico.";
+        case eMarkers::CayoPericoExit:
+            return "Press ~INPUT_CONTEXT~ to leave.";
         default:
             return "INVALID INDEX";
     }
