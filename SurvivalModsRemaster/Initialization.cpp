@@ -116,16 +116,23 @@ Ped INIT::SpawnTriggerPed(size_t index)
             PED::SET_PED_CONFIG_FLAG(handle, 42, true);
             PED::SET_PED_CONFIG_FLAG(handle, 301, true);
             break;
+        case 0xdfb55c81:
+        case 0x5c9d564b:
+        case 0x6a20728:
+        case 0x573201b8:
+            PED::SET_PED_NEVER_LEAVES_GROUP(handle, true);
+            PED::SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(handle, true);
+            break;
         default:
             break;
     }
 
     Hash pKey = MISC::GET_HASH_KEY("PLAYER");
     int rel = TriggerPedsData::playerRel.at(index);
-    PED::SET_PED_RELATIONSHIP_GROUP_HASH(handle, Data::neutralRelGroup);
     PED::SET_RELATIONSHIP_BETWEEN_GROUPS(rel, Data::neutralRelGroup, pKey);
     PED::SET_RELATIONSHIP_BETWEEN_GROUPS(rel, pKey, Data::neutralRelGroup);
+    PED::SET_PED_RELATIONSHIP_GROUP_HASH(handle, Data::neutralRelGroup);
     WEAPON::GIVE_WEAPON_TO_PED(handle, eWeapon::WeaponPistol, 100, true, false);
-    TASK::TASK_START_SCENARIO_IN_PLACE(handle, TriggerPedsData::tasks.at(index).c_str(), 0, true);
+    TASK::TASK_START_SCENARIO_IN_PLACE(handle, TriggerPedsData::tasks.at(index).c_str(), 0, 0);
     return handle;
 }

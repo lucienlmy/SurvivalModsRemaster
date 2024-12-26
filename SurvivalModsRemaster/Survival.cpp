@@ -59,9 +59,6 @@ void LoadZombieResources()
 	STREAMING::REQUEST_CLIP_SET("clipset@anim@ingame@melee@unarmed@streamed_core_zombie");
 	STREAMING::REQUEST_CLIP_SET("clipset@anim@ingame@melee@unarmed@streamed_variations_zombie");
 	STREAMING::REQUEST_CLIP_SET("clipset@anim@ingame@melee@unarmed@streamed_taunts_zombie");
-	AUDIO::REQUEST_SCRIPT_AUDIO_BANK("DLC_24-1/YK_Survival", false, -1);
-	AUDIO::REQUEST_SCRIPT_AUDIO_BANK("DLC_24-1/YK_Survival_01", false, -1);
-	AUDIO::REQUEST_SCRIPT_AUDIO_BANK("DLC_24-1/YK_Survival_02", false, -1);
 }
 
 void UnloadZombieResources()
@@ -73,15 +70,6 @@ void UnloadZombieResources()
 	STREAMING::REMOVE_CLIP_SET("clipset@anim@ingame@melee@unarmed@streamed_core_zombie");
 	STREAMING::REMOVE_CLIP_SET("clipset@anim@ingame@melee@unarmed@streamed_variations_zombie");
 	STREAMING::REMOVE_CLIP_SET("clipset@anim@ingame@melee@unarmed@streamed_taunts_zombie");
-
-	if (AUDIO::IS_AUDIO_SCENE_ACTIVE("DLC_24-1_YK_Mixer_Scene"))
-	{
-		AUDIO::START_AUDIO_SCENE("DLC_24-1_YK_Mixer_Scene");
-	}
-
-	AUDIO::RELEASE_NAMED_SCRIPT_AUDIO_BANK("DLC_24-1/YK_Survival");
-	AUDIO::RELEASE_NAMED_SCRIPT_AUDIO_BANK("DLC_24-1/YK_Survival_01");
-	AUDIO::RELEASE_NAMED_SCRIPT_AUDIO_BANK("DLC_24-1/YK_Survival_02");
 }
 
 void SURVIVAL::StartMission(bool infiniteWaves, bool timed, bool hardcore)
@@ -144,8 +132,7 @@ void SURVIVAL::Initialize()
 	}
 	else if (SpawnerData::isXmas)
 	{
-		MISC::SET_WEATHER_TYPE_OVERTIME_PERSIST("BLIZZARD", 30);
-		MISC::SET_RAIN(0.5f);
+		MISC::SET_WEATHER_TYPE_OVERTIME_PERSIST("XMAS", 30);
 	}
 	else if (SurvivalData::zombies)
 	{
@@ -339,6 +326,8 @@ void SURVIVAL::QuitSurvival(bool playerDied)
 	{
 		GiveReward(true);
 		UnloadNY();
+		UnloadBunker();
+		UnloadCayoPerico();
 	}
 	else
 	{

@@ -9,6 +9,7 @@ namespace BLIPS
     Blip Create(float x, float y, float z, int sprite, eBlipColor color, const char* name);
 	void CreateForEnemyPed(Ped ped);
 	void CreateForEnemyVehicle(Vehicle vehicle);
+	void CreateForVehicle(Vehicle vehicle, const char* name, eBlipSprite sprite);
 	Blip GetBlipForEntity(Entity entity);
 	void DeleteBlipForEntity(Entity entity);
 	void CreateForEnemyPed(Ped ped, int sprite, const char* name);
