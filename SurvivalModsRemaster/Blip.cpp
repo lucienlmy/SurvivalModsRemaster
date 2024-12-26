@@ -79,6 +79,18 @@ void BLIPS::CreateForEnemyVehicle(Vehicle vehicle)
 	//HUD::SET_BLIP_AS_SHORT_RANGE(blipHandle, true);
 }
 
+void BLIPS::CreateForVehicle(Vehicle vehicle, const char* name, eBlipSprite sprite)
+{
+	Blip blipHandle = HUD::ADD_BLIP_FOR_ENTITY(vehicle);
+	Hash model = ENTITY::GET_ENTITY_MODEL(vehicle);
+
+	HUD::SET_BLIP_SPRITE(blipHandle, sprite);
+	HUD::SET_BLIP_SCALE(blipHandle, 0.8f);
+	HUD::SET_BLIP_COLOUR(blipHandle, eBlipColor::BlipColorWhite);
+	SetBlipName(blipHandle, name);
+	//HUD::SET_BLIP_AS_SHORT_RANGE(blipHandle, true);
+}
+
 Blip BLIPS::GetBlipForEntity(Entity entity)
 {
 	return HUD::GET_BLIP_FROM_ENTITY(entity);

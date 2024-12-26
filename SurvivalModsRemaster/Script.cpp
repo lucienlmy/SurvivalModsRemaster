@@ -33,6 +33,7 @@ bool tpPointsEnabled;
 int playerId;
 SurvivalModes currentMode = SurvivalModes::TenWaves;
 bool islandLoaded = false;
+Vehicle cayoPericoEntranceVetir = 0;
 
 std::array<const char*, 319> CAYO_PERICO_IPL = {
     "h4_mph4_terrain_01_grass_0",
@@ -356,8 +357,6 @@ std::array<const char*, 319> CAYO_PERICO_IPL = {
     "h4_mph4_island_placement"
 };
 
-Vector3 CayoPericoCoords = Vector3(4858.0, -5171.0, 2.0);
-
 struct TPPoint {
     float x;
     float y;
@@ -662,11 +661,31 @@ void LoadCayoPerico()
         STREAMING::REQUEST_IPL(ipl);
     }
 
-    WAIT(1200);
+    WAIT(2500);
+
+    TASK::SET_SCENARIO_GROUP_ENABLED("Heist_Island_Peds", true);
+    STREAMING::SET_ISLAND_ENABLED("HeistIsland", true);
+    PATHFIND::SET_ALLOW_STREAM_HEIST_ISLAND_NODES(1);
+    AUDIO::SET_AMBIENT_ZONE_LIST_STATE_PERSISTENT("AZL_DLC_Hei4_Island_Zones", true, true);
+    AUDIO::SET_AMBIENT_ZONE_LIST_STATE_PERSISTENT("AZL_DLC_Hei4_Island_Disabled_Zones", false, true);
+
+    islandLoaded = true;
 }
 
 void UnloadCayoPerico()
 {
+    islandLoaded = false;
+
+    TASK::SET_SCENARIO_GROUP_ENABLED("Heist_Island_Peds", false);
+    STREAMING::SET_ISLAND_ENABLED("HeistIsland", false);
+    PATHFIND::SET_ALLOW_STREAM_HEIST_ISLAND_NODES(0);
+    AUDIO::SET_AMBIENT_ZONE_LIST_STATE_PERSISTENT("AZL_DLC_Hei4_Island_Zones", false, false);
+    AUDIO::SET_AMBIENT_ZONE_LIST_STATE_PERSISTENT("AZL_DLC_Hei4_Island_Disabled_Zones", true, false);
+    HUD::SET_USE_ISLAND_MAP(false);
+    WATER::RESET_DEEP_OCEAN_SCALER();
+    ENTITY::SET_ENTITY_AS_NO_LONGER_NEEDED(&cayoPericoEntranceVetir);
+    cayoPericoEntranceVetir = 0;
+
     for (const char*& ipl : CAYO_PERICO_IPL)
     {
         STREAMING::REMOVE_IPL(ipl);
@@ -757,6 +776,14 @@ void processMarkers() {
             coords.z = coords.z + (i == 0 ? 1.0f : 0.0f);
             ENTITY::SET_ENTITY_COORDS(playerId, coords.x, coords.y, coords.z, 1, 0, 0, 1);
             WAIT(2000);
+
+            if (i == eMarkers::CayoPericoEntrance)
+            {
+                cayoPericoEntranceVetir = VEHICLE::CREATE_VEHICLE(MISC::GET_HASH_KEY("vetir"), 4901.502f, -5191.543f, 3.259555f, 0, false, true, false);
+                ENTITY::SET_ENTITY_AS_MISSION_ENTITY(cayoPericoEntranceVetir, true, false);
+                BLIPS::CreateForVehicle(cayoPericoEntranceVetir, "Vehicle", eBlipSprite::BlipSpritePersonalVehicleCar);
+            }
+
             CAM::DO_SCREEN_FADE_IN(1000);
         }
     }
@@ -911,33 +938,11 @@ int main() {
 
     while (true) {
         playerId = PLAYER::PLAYER_PED_ID();
-        Vector3 playerCoords = ENTITY::GET_ENTITY_COORDS(playerId, true);
 
-        //load cayo perico when the player is in range
-        if (SYSTEM::VDIST2(playerCoords.x, playerCoords.y, playerCoords.z, CayoPericoCoords.x, CayoPericoCoords.y, CayoPericoCoords.z) < 2000)
+        if (islandLoaded) 
         {
-            if (!islandLoaded) {
-                islandLoaded = true;
-                WATER::SET_DEEP_OCEAN_SCALER(0);
-                TASK::SET_SCENARIO_GROUP_ENABLED("Heist_Island_Peds", true);
-                STREAMING::SET_ISLAND_ENABLED("HeistIsland", true);
-                PATHFIND::SET_ALLOW_STREAM_HEIST_ISLAND_NODES(1);
-                AUDIO::SET_AMBIENT_ZONE_LIST_STATE_PERSISTENT("AZL_DLC_Hei4_Island_Zones", true, true);
-                AUDIO::SET_AMBIENT_ZONE_LIST_STATE_PERSISTENT("AZL_DLC_Hei4_Island_Disabled_Zones", false, true);
-            }
-
+            WATER::SET_DEEP_OCEAN_SCALER(0);
             HUD::SET_USE_ISLAND_MAP(true);
-            HUD::SET_RADAR_AS_INTERIOR_THIS_FRAME(MISC::GET_HASH_KEY("h4_fake_islandx"), 4700.0f, -5145.0f, 0, 0);
-        }
-        else if (islandLoaded)
-        {
-            islandLoaded = false;
-            TASK::SET_SCENARIO_GROUP_ENABLED("Heist_Island_Peds", false);
-            STREAMING::SET_ISLAND_ENABLED("HeistIsland", false);
-            PATHFIND::SET_ALLOW_STREAM_HEIST_ISLAND_NODES(0);
-            AUDIO::SET_AMBIENT_ZONE_LIST_STATE_PERSISTENT("AZL_DLC_Hei4_Island_Zones", false, false);
-            AUDIO::SET_AMBIENT_ZONE_LIST_STATE_PERSISTENT("AZL_DLC_Hei4_Island_Disabled_Zones", true, false);
-            HUD::SET_USE_ISLAND_MAP(false);
         }
 
         IsPlayerInMissionStartRange();
