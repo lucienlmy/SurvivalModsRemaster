@@ -927,7 +927,7 @@ int main() {
         createTPBlips();
     }
 
-    DLC::ON_ENTER_MP();
+    //DLC::ON_ENTER_MP();
     MISC::SET_INSTANCE_PRIORITY_MODE(1);
 
     //Load bunker hatch for the bunker survival
